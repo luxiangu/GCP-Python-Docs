@@ -12,7 +12,7 @@ This directory contains samples for Google Cloud KMS API. The `Google Cloud KMS 
 
 
 
-.. _Google Cloud KMS API: https://cloud.google.com/kms/docs/ 
+.. _Google Cloud KMS API: https://cloud.google.com/kms/docs/
 
 Setup
 -------------------------------------------------------------------------------
@@ -31,10 +31,16 @@ credentials for applications.
 Install Dependencies
 ++++++++++++++++++++
 
+#. Clone python-docs-samples and change directory to the sample directory you want to use.
+
+    .. code-block:: bash
+
+        $ git clone https://github.com/GoogleCloudPlatform/python-docs-samples.git
+
 #. Install `pip`_ and `virtualenv`_ if you do not already have them. You may want to refer to the `Python Development Environment Setup Guide`_ for Google Cloud Platform for instructions.
 
- .. _Python Development Environment Setup Guide:
-     https://cloud.google.com/python/setup
+   .. _Python Development Environment Setup Guide:
+       https://cloud.google.com/python/setup
 
 #. Create a virtualenv. Samples are compatible with Python 2.7 and 3.4+.
 
@@ -59,7 +65,7 @@ Quickstart
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 .. image:: https://gstatic.com/cloudssh/images/open-btn.png
-   :target: https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/GoogleCloudPlatform/python-docs-samples&page=editor&open_in_editor=kms/api-client/quickstart.py;kms/api-client/README.rst
+   :target: https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/GoogleCloudPlatform/python-docs-samples&page=editor&open_in_editor=kms/api-client/quickstart.py,kms/api-client/README.rst
 
 
 
@@ -69,33 +75,6 @@ To run this sample:
 .. code-block:: bash
 
     $ python quickstart.py
-
-
-Snippets
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-.. image:: https://gstatic.com/cloudssh/images/open-btn.png
-   :target: https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/GoogleCloudPlatform/python-docs-samples&page=editor&open_in_editor=kms/api-client/snippets.py;kms/api-client/README.rst
-
-
-
-
-To run this sample:
-
-.. code-block:: bash
-
-    $ python snippets.py
-
-    usage: snippets.py [-h]
-                       {create_key_ring,create_crypto_key,encrypt,decrypt,disable_crypto_key_version,enable_crypto_key_version,destroy_crypto_key_version,restore_crypto_key_version,add_member_to_crypto_key_policy,get_key_ring_policy}
-                       ...
-
-    positional arguments:
-      {create_key_ring,create_crypto_key,encrypt,decrypt,disable_crypto_key_version,enable_crypto_key_version,destroy_crypto_key_version,restore_crypto_key_version,add_member_to_crypto_key_policy,get_key_ring_policy}
-
-    optional arguments:
-      -h, --help            show this help message and exit
-
 
 
 

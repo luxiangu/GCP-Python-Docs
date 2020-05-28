@@ -16,14 +16,13 @@ import sys
 import time
 
 from google.cloud import pubsub
-
-# Add manager for bootstrapping device registry / device for testing
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'manager'))  # noqa
-import manager
-
 import pytest
 
 import cloudiot_http_example
+
+# Add manager for bootstrapping device registry / device for testing
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'manager'))  # noqa
+import manager  # noqa
 
 
 cloud_region = 'us-central1'
@@ -74,10 +73,6 @@ def test_event(test_topic, capsys):
             'hello', 'event', _BASE_URL, project_id, cloud_region,
             registry_id, device_id, jwt_token))
 
-    manager.get_state(
-            service_account_json, project_id, cloud_region, registry_id,
-            device_id)
-
     manager.delete_device(
             service_account_json, project_id, cloud_region, registry_id,
             device_id)
@@ -87,7 +82,6 @@ def test_event(test_topic, capsys):
 
     out, _ = capsys.readouterr()
     assert 'format : RSA_X509_PEM' in out
-    assert 'State: {' in out
     assert '200' in out
 
 
@@ -125,8 +119,7 @@ def test_state(test_topic, capsys):
 
     out, _ = capsys.readouterr()
     assert 'format : RSA_X509_PEM' in out
-    assert 'State: {' in out
-    assert 'aGVsbG8=' in out
+    assert 'binary_data: "hello"' in out
     assert '200' in out
 
 
@@ -164,5 +157,4 @@ def test_config(test_topic, capsys):
 
     out, _ = capsys.readouterr()
     assert 'format : RSA_X509_PEM' in out
-    assert 'State: {' in out
     assert '"version": "1"' in out

@@ -17,18 +17,22 @@
 import argparse
 
 from google.protobuf import empty_pb2
-
 import grpc
 
-from generated_pb2 import bookstore_pb2
+import bookstore_pb2_grpc
 
 
-def run(host, port, api_key, auth_token, timeout):
+def run(host, port, api_key, auth_token, timeout, use_tls):
     """Makes a basic ListShelves call against a gRPC Bookstore server."""
 
-    channel = grpc.insecure_channel('{}:{}'.format(host, port))
+    if use_tls:
+        with open('../roots.pem', 'rb') as f:
+            creds = grpc.ssl_channel_credentials(f.read())
+        channel = grpc.secure_channel('{}:{}'.format(host, port), creds)
+    else:
+        channel = grpc.insecure_channel('{}:{}'.format(host, port))
 
-    stub = bookstore_pb2.BookstoreStub(channel)
+    stub = bookstore_pb2_grpc.BookstoreStub(channel)
     metadata = []
     if api_key:
         metadata.append(('x-api-key', api_key))
@@ -53,5 +57,8 @@ if __name__ == '__main__':
     parser.add_argument(
         '--auth_token', default=None,
         help='The JWT auth token to use for the call')
+    parser.add_argument(
+        '--use_tls', type=bool, default=False,
+        help='Enable when the server requires TLS')
     args = parser.parse_args()
-    run(args.host, args.port, args.api_key, args.auth_token, args.timeout)
+    run(args.host, args.port, args.api_key, args.auth_token, args.timeout, args.use_tls)

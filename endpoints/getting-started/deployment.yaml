@@ -45,12 +45,12 @@ spec:
           "--http_port=8081",
           "--backend=127.0.0.1:8080",
           "--service=SERVICE_NAME",
-          "--version=SERVICE_CONFIG_ID",
+          "--rollout_strategy=managed",
         ]
       # [END esp]
         ports:
         - containerPort: 8081
       - name: echo
-        image: gcr.io/google-samples/echo-python:1.0
+        image: gcr.io/endpoints-release/echo-python:1.0
         ports:
         - containerPort: 8080

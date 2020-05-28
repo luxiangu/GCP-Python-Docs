@@ -13,36 +13,37 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 
+import argparse
 
-def run_quickstart():
-    # [START kms_quickstart]
-    # Imports the Google APIs client library
-    import googleapiclient.discovery
 
-    # Your Google Cloud Platform project ID
-    project_id = 'YOUR_PROJECT_ID'
+# [START kms_quickstart]
+def quickstart(project_id, location_id):
+    # Import the client library.
+    from google.cloud import kms
 
-    # Lists keys in the "global" location.
-    location = 'global'
+    # Create the client.
+    client = kms.KeyManagementServiceClient()
 
-    # Creates an API client for the KMS API.
-    kms_client = googleapiclient.discovery.build('cloudkms', 'v1')
+    # Build the parent location name.
+    location_name = client.location_path(project_id, location_id)
 
-    # The resource name of the location associated with the key rings.
-    parent = 'projects/{}/locations/{}'.format(project_id, location)
+    # Call the API.
+    key_rings = client.list_key_rings(location_name)
 
-    # Lists key rings
-    request = kms_client.projects().locations().keyRings().list(parent=parent)
-    response = request.execute()
+    # Example of iterating over key rings.
+    for key_ring in key_rings:
+        print(key_ring.name)
 
-    if 'keyRings' in response and response['keyRings']:
-        print('Key rings:')
-        for key_ring in response['keyRings']:
-            print(key_ring['name'])
-    else:
-        print('No key rings found.')
-    # [END kms_quickstart]
+    return key_rings
+# [END kms_quickstart]
 
 
 if __name__ == '__main__':
-    run_quickstart()
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument('project_id', help='id of the GCP project')
+    parser.add_argument('location_id', help='id of the KMS location')
+    args = parser.parse_args()
+
+    quickstart(args.project_id, args.location_id)

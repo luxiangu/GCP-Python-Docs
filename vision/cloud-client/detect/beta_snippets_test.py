@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc. All Rights Reserved.
+# Copyright 2018 Google LLC All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,64 +13,79 @@
 # limitations under the License.
 
 import os
+import uuid
 
-from beta_snippets import (
-    detect_document,
-    detect_safe_search,
-    detect_web,
-    web_entities,
-    web_entities_include_geo_results,
-    web_entities_include_geo_results_uri
-)
+import beta_snippets
+
+RESOURCES = os.path.join(os.path.dirname(__file__), 'resources')
+GCS_ROOT = 'gs://cloud-samples-data/vision/'
 
 BUCKET = os.environ['CLOUD_STORAGE_BUCKET']
+OUTPUT_PREFIX = 'TEST_OUTPUT_{}'.format(uuid.uuid4())
+GCS_DESTINATION_URI = 'gs://{}/{}/'.format(BUCKET, OUTPUT_PREFIX)
 
 
-def test_file_with_geo(capsys):
-    path = 'resources/city.jpg'
-    web_entities_include_geo_results(path)
+def test_localize_objects(capsys):
+    path = os.path.join(RESOURCES, 'puppies.jpg')
+
+    beta_snippets.localize_objects(path)
+
     out, _ = capsys.readouterr()
+    assert 'Dog' in out
 
-    assert 'Zepra' in out
 
+def test_localize_objects_uri(capsys):
+    uri = GCS_ROOT + 'puppies.jpg'
 
-def test_gcsuri_with_geo(capsys):
-    uri = 'gs://{}/vision/landmark.jpg'.format(BUCKET)
-    web_entities_include_geo_results_uri(uri)
+    beta_snippets.localize_objects_uri(uri)
+
     out, _ = capsys.readouterr()
+    assert 'Dog' in out
 
-    assert 'Description: Palace of Fine Arts Theatre' in out
 
+def test_handwritten_ocr(capsys):
+    path = os.path.join(RESOURCES, 'handwritten.jpg')
 
-def test_file_without_geo(capsys):
-    path = 'resources/city.jpg'
-    web_entities(path)
+    beta_snippets.detect_handwritten_ocr(path)
+
     out, _ = capsys.readouterr()
+    assert 'Cloud Vision API' in out
 
-    assert 'Zepra' not in out
 
+def test_handwritten_ocr_uri(capsys):
+    uri = GCS_ROOT + 'handwritten.jpg'
 
-def test_detect_document_path(capsys):
-    path = 'resources/text.jpg'
-    detect_document(path)
+    beta_snippets.detect_handwritten_ocr_uri(uri)
+
     out, _ = capsys.readouterr()
+    assert 'Cloud Vision API' in out
 
-    assert 'Word text: class (confidence:' in out
 
-
-def test_safe_search(capsys):
-    path = 'resources/wakeupcat.jpg'
-    detect_safe_search(path)
+def test_detect_batch_annotate_files(capsys):
+    file_name = os.path.join(RESOURCES, 'kafka.pdf')
+    beta_snippets.detect_batch_annotate_files(file_name)
     out, _ = capsys.readouterr()
+    assert 'Symbol: a' in out
+    assert 'Word text: evenings' in out
 
-    assert 'VERY_LIKELY' in out
-    assert 'racy: ' in out
 
-
-def test_detect_file(capsys):
-    path = 'resources/landmark.jpg'
-    detect_web(path)
+def test_detect_batch_annotate_files_uri(capsys):
+    gcs_uri = GCS_ROOT + 'document_understanding/kafka.pdf'
+    beta_snippets.detect_batch_annotate_files_uri(gcs_uri)
     out, _ = capsys.readouterr()
+    assert 'Symbol' in out
+    assert 'Word text' in out
 
-    assert 'Description: Palace of Fine Arts Theatre' in out
-    assert 'Best guess label: palace of fine arts' in out
+
+def test_async_batch_annotate_images(capsys):
+    gcs_uri = GCS_ROOT + 'landmark/eiffel_tower.jpg'
+    beta_snippets.async_batch_annotate_images_uri(gcs_uri, GCS_DESTINATION_URI)
+    out, _ = capsys.readouterr()
+    assert 'description: "Tower"' in out
+
+    from google.cloud import storage
+    storage_client = storage.Client()
+    bucket = storage_client.get_bucket(BUCKET)
+    if len(list(bucket.list_blobs(prefix=OUTPUT_PREFIX))) > 0:
+        for blob in bucket.list_blobs(prefix=OUTPUT_PREFIX):
+            blob.delete()

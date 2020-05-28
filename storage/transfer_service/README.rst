@@ -13,7 +13,7 @@ This directory contains samples for Google Cloud Storage. `Google Cloud Storage`
 These samples demonstrate how to transfer data between Google Cloud Storage and other storage systems.
 
 
-.. _Google Cloud Storage: https://cloud.google.com/storage/docs 
+.. _Google Cloud Storage: https://cloud.google.com/storage/docs
 
 Setup
 -------------------------------------------------------------------------------
@@ -32,10 +32,16 @@ credentials for applications.
 Install Dependencies
 ++++++++++++++++++++
 
+#. Clone python-docs-samples and change directory to the sample directory you want to use.
+
+    .. code-block:: bash
+
+        $ git clone https://github.com/GoogleCloudPlatform/python-docs-samples.git
+
 #. Install `pip`_ and `virtualenv`_ if you do not already have them. You may want to refer to the `Python Development Environment Setup Guide`_ for Google Cloud Platform for instructions.
 
- .. _Python Development Environment Setup Guide:
-     https://cloud.google.com/python/setup
+   .. _Python Development Environment Setup Guide:
+       https://cloud.google.com/python/setup
 
 #. Create a virtualenv. Samples are compatible with Python 2.7 and 3.4+.
 
@@ -60,7 +66,7 @@ Transfer to GCS Nearline
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 .. image:: https://gstatic.com/cloudssh/images/open-btn.png
-   :target: https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/GoogleCloudPlatform/python-docs-samples&page=editor&open_in_editor=storage/transfer_service/nearline_request.py;storage/transfer_service/README.rst
+   :target: https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/GoogleCloudPlatform/python-docs-samples&page=editor&open_in_editor=storage/transfer_service/nearline_request.py,storage/transfer_service/README.rst
 
 
 
@@ -72,11 +78,11 @@ To run this sample:
     $ python nearline_request.py
 
     usage: nearline_request.py [-h]
-                               description project_id date time source_bucket
-                               sink_bucket
+                               description project_id start_date start_time
+                               source_bucket sink_bucket
 
-    Command-line sample that creates a one-time transfer from Google Cloud
-    Storage standard class to the Nearline storage class."
+    Command-line sample that creates a daily transfer from a standard
+    GCS bucket to a Nearline GCS bucket for objects untouched for 30 days.
 
     This sample is used on this page:
 
@@ -87,10 +93,10 @@ To run this sample:
     positional arguments:
       description    Transfer description.
       project_id     Your Google Cloud project ID.
-      date           Date YYYY/MM/DD.
-      time           Time (24hr) HH:MM.
-      source_bucket  Source bucket name.
-      sink_bucket    Sink bucket name.
+      start_date     Date YYYY/MM/DD.
+      start_time     UTC Time (24hr) HH:MM:SS.
+      source_bucket  Standard GCS bucket name.
+      sink_bucket    Nearline GCS bucket name.
 
     optional arguments:
       -h, --help     show this help message and exit
@@ -101,7 +107,7 @@ Transfer from AWS
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 .. image:: https://gstatic.com/cloudssh/images/open-btn.png
-   :target: https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/GoogleCloudPlatform/python-docs-samples&page=editor&open_in_editor=storage/transfer_service/aws_request.py;storage/transfer_service/README.rst
+   :target: https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/GoogleCloudPlatform/python-docs-samples&page=editor&open_in_editor=storage/transfer_service/aws_request.py,storage/transfer_service/README.rst
 
 
 
@@ -113,8 +119,9 @@ To run this sample:
     $ python aws_request.py
 
     usage: aws_request.py [-h]
-                          description project_id date time source_bucket
-                          access_key secret_access_key sink_bucket
+                          description project_id start_date start_time
+                          source_bucket access_key_id secret_access_key
+                          sink_bucket
 
     Command-line sample that creates a one-time transfer from Amazon S3 to
     Google Cloud Storage.
@@ -128,12 +135,12 @@ To run this sample:
     positional arguments:
       description        Transfer description.
       project_id         Your Google Cloud project ID.
-      date               Date YYYY/MM/DD.
-      time               Time (24hr) HH:MM.
-      source_bucket      Source bucket name.
-      access_key         Your AWS access key id.
+      start_date         Date YYYY/MM/DD.
+      start_time         UTC Time (24hr) HH:MM:SS.
+      source_bucket      AWS source bucket name.
+      access_key_id      Your AWS access key id.
       secret_access_key  Your AWS secret access key.
-      sink_bucket        Sink bucket name.
+      sink_bucket        GCS sink bucket name.
 
     optional arguments:
       -h, --help         show this help message and exit
@@ -144,7 +151,7 @@ Check transfer status
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 .. image:: https://gstatic.com/cloudssh/images/open-btn.png
-   :target: https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/GoogleCloudPlatform/python-docs-samples&page=editor&open_in_editor=storage/transfer_service/transfer_check.py;storage/transfer_service/README.rst
+   :target: https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/GoogleCloudPlatform/python-docs-samples&page=editor&open_in_editor=storage/transfer_service/transfer_check.py,storage/transfer_service/README.rst
 
 
 

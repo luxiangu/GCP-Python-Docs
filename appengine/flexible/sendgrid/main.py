@@ -12,18 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# [START app]
 import logging
 import os
 
 from flask import Flask, render_template, request
 import sendgrid
-from sendgrid.helpers import mail
+from sendgrid.helpers.mail import Mail
 
-# [START config]
 SENDGRID_API_KEY = os.environ['SENDGRID_API_KEY']
 SENDGRID_SENDER = os.environ['SENDGRID_SENDER']
-# [END config]
 
 app = Flask(__name__)
 
@@ -33,29 +30,28 @@ def index():
     return render_template('index.html')
 
 
-# [START example]
+# [START gae_flex_sendgrid]
 @app.route('/send/email', methods=['POST'])
 def send_email():
-    to = request.form.get('to')
-    if not to:
+    recipient = request.form.get('to')
+    if not recipient:
         return ('Please provide an email address in the "to" query string '
                 'parameter.'), 400
 
-    sg = sendgrid.SendGridAPIClient(apikey=SENDGRID_API_KEY)
+    message = Mail(
+        from_email=SENDGRID_SENDER,
+        to_emails='{},'.format(recipient),
+        subject='This is a test email',
+        html_content='<strong>Example</strong> message.')
+    sg = sendgrid.SendGridAPIClient(SENDGRID_API_KEY)
 
-    to_email = mail.Email(to)
-    from_email = mail.Email(SENDGRID_SENDER)
-    subject = 'This is a test email'
-    content = mail.Content('text/plain', 'Example message.')
-    message = mail.Mail(from_email, subject, to_email, content)
-
-    response = sg.client.mail.send.post(request_body=message.get())
+    response = sg.send(message)
 
     if response.status_code != 202:
         return 'An error occurred: {}'.format(response.body), 500
 
     return 'Email sent.'
-# [END example]
+# [END gae_flex_sendgrid]
 
 
 @app.errorhandler(500)
@@ -71,4 +67,3 @@ if __name__ == '__main__':
     # This is used when running locally. Gunicorn is used to run the
     # application on Google App Engine. See entrypoint in app.yaml.
     app.run(host='127.0.0.1', port=8080, debug=True)
-# [END app]

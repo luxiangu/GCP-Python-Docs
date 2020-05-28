@@ -32,7 +32,7 @@ def is_ipv6(addr):
         return False
 
 
-# [START example]
+# [START gae_flex_datastore_app]
 @app.route('/')
 def index():
     ds = datastore.Client()
@@ -52,17 +52,19 @@ def index():
     })
 
     ds.put(entity)
-
     query = ds.query(kind='visit', order=('-timestamp',))
 
-    results = [
-        'Time: {timestamp} Addr: {user_ip}'.format(**x)
-        for x in query.fetch(limit=10)]
+    results = []
+    for x in query.fetch(limit=10):
+        try:
+            results.append('Time: {timestamp} Addr: {user_ip}'.format(**x))
+        except KeyError:
+            print("Error with result format, skipping entry.")
 
     output = 'Last 10 visits:\n{}'.format('\n'.join(results))
 
     return output, 200, {'Content-Type': 'text/plain; charset=utf-8'}
-# [END example]
+# [END gae_flex_datastore_app]
 
 
 @app.errorhandler(500)

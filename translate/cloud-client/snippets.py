@@ -23,12 +23,13 @@ https://cloud.google.com/translate/docs.
 
 import argparse
 
-from google.cloud import translate
 import six
 
 
 def detect_language(text):
+    # [START translate_detect_language]
     """Detects the text's language."""
+    from google.cloud import translate_v2 as translate
     translate_client = translate.Client()
 
     # Text can also be a sequence of strings, in which case this method
@@ -38,33 +39,41 @@ def detect_language(text):
     print('Text: {}'.format(text))
     print('Confidence: {}'.format(result['confidence']))
     print('Language: {}'.format(result['language']))
+    # [END translate_detect_language]
 
 
 def list_languages():
+    # [START translate_list_codes]
     """Lists all available languages."""
+    from google.cloud import translate_v2 as translate
     translate_client = translate.Client()
 
     results = translate_client.get_languages()
 
     for language in results:
         print(u'{name} ({language})'.format(**language))
+    # [END translate_list_codes]
 
 
 def list_languages_with_target(target):
+    # [START translate_list_language_names]
     """Lists all available languages and localizes them to the target language.
 
     Target must be an ISO 639-1 language code.
     See https://g.co/cloud/translate/v2/translate-reference#supported_languages
     """
+    from google.cloud import translate_v2 as translate
     translate_client = translate.Client()
 
     results = translate_client.get_languages(target_language=target)
 
     for language in results:
         print(u'{name} ({language})'.format(**language))
+    # [END translate_list_language_names]
 
 
-def translate_text_with_model(target, text, model=translate.NMT):
+def translate_text_with_model(target, text, model='nmt'):
+    # [START translate_text_with_model]
     """Translates text into the target language.
 
     Make sure your project is whitelisted.
@@ -72,6 +81,7 @@ def translate_text_with_model(target, text, model=translate.NMT):
     Target must be an ISO 639-1 language code.
     See https://g.co/cloud/translate/v2/translate-reference#supported_languages
     """
+    from google.cloud import translate_v2 as translate
     translate_client = translate.Client()
 
     if isinstance(text, six.binary_type):
@@ -86,14 +96,17 @@ def translate_text_with_model(target, text, model=translate.NMT):
     print(u'Translation: {}'.format(result['translatedText']))
     print(u'Detected source language: {}'.format(
         result['detectedSourceLanguage']))
+    # [END translate_text_with_model]
 
 
 def translate_text(target, text):
+    # [START translate_translate_text]
     """Translates text into the target language.
 
     Target must be an ISO 639-1 language code.
     See https://g.co/cloud/translate/v2/translate-reference#supported_languages
     """
+    from google.cloud import translate_v2 as translate
     translate_client = translate.Client()
 
     if isinstance(text, six.binary_type):
@@ -108,6 +121,7 @@ def translate_text(target, text):
     print(u'Translation: {}'.format(result['translatedText']))
     print(u'Detected source language: {}'.format(
         result['detectedSourceLanguage']))
+    # [END translate_translate_text]
 
 
 if __name__ == '__main__':

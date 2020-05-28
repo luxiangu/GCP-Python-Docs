@@ -12,7 +12,7 @@ This directory contains samples for Google Cloud Pub/Sub. `Google Cloud Pub/Sub`
 
 
 
-.. _Google Cloud Pub/Sub: https://cloud.google.com/pubsub/docs 
+.. _Google Cloud Pub/Sub: https://cloud.google.com/pubsub/docs
 
 Setup
 -------------------------------------------------------------------------------
@@ -31,10 +31,16 @@ credentials for applications.
 Install Dependencies
 ++++++++++++++++++++
 
+#. Clone python-docs-samples and change directory to the sample directory you want to use.
+
+    .. code-block:: bash
+
+        $ git clone https://github.com/GoogleCloudPlatform/python-docs-samples.git
+
 #. Install `pip`_ and `virtualenv`_ if you do not already have them. You may want to refer to the `Python Development Environment Setup Guide`_ for Google Cloud Platform for instructions.
 
- .. _Python Development Environment Setup Guide:
-     https://cloud.google.com/python/setup
+   .. _Python Development Environment Setup Guide:
+       https://cloud.google.com/python/setup
 
 #. Create a virtualenv. Samples are compatible with Python 2.7 and 3.4+.
 
@@ -55,27 +61,11 @@ Install Dependencies
 Samples
 -------------------------------------------------------------------------------
 
-Quickstart
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-.. image:: https://gstatic.com/cloudssh/images/open-btn.png
-   :target: https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/GoogleCloudPlatform/python-docs-samples&page=editor&open_in_editor=pubsub/cloud-client/quickstart.py;pubsub/cloud-client/README.rst
-
-
-
-
-To run this sample:
-
-.. code-block:: bash
-
-    $ python quickstart.py
-
-
 Publisher
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 .. image:: https://gstatic.com/cloudssh/images/open-btn.png
-   :target: https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/GoogleCloudPlatform/python-docs-samples&page=editor&open_in_editor=pubsub/cloud-client/publisher.py;pubsub/cloud-client/README.rst
+   :target: https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/GoogleCloudPlatform/python-docs-samples&page=editor&open_in_editor=pubsub/cloud-client/publisher.py,pubsub/cloud-client/README.rst
 
 
 
@@ -87,8 +77,8 @@ To run this sample:
     $ python publisher.py
 
     usage: publisher.py [-h]
-                        project
-                        {list,create,delete,publish,publish-with-futures,publish-with-batch-settings}
+                        project_id
+                        {list,create,delete,publish,publish-with-custom-attributes,publish-with-error-handler,publish-with-batch-settings,publish-with-retry-settings}
                         ...
 
     This application demonstrates how to perform basic operations on topics
@@ -98,18 +88,23 @@ To run this sample:
     at https://cloud.google.com/pubsub/docs.
 
     positional arguments:
-      project               Your Google Cloud project ID
-      {list,create,delete,publish,publish-with-futures,publish-with-batch-settings}
+      project_id            Your Google Cloud project ID
+      {list,create,delete,publish,publish-with-custom-attributes,publish-with-error-handler,publish-with-batch-settings,publish-with-retry-settings}
         list                Lists all Pub/Sub topics in the given project.
         create              Create a new Pub/Sub topic.
         delete              Deletes an existing Pub/Sub topic.
         publish             Publishes multiple messages to a Pub/Sub topic.
-        publish-with-futures
-                            Publishes multiple messages to a Pub/Sub topic and
-                            prints their message IDs.
+        publish-with-custom-attributes
+                            Publishes multiple messages with custom attributes to
+                            a Pub/Sub topic.
+        publish-with-error-handler
+                            Publishes multiple messages to a Pub/Sub topic with an
+                            error handler.
         publish-with-batch-settings
                             Publishes multiple messages to a Pub/Sub topic with
                             batch settings.
+        publish-with-retry-settings
+                            Publishes messages with custom retry settings.
 
     optional arguments:
       -h, --help            show this help message and exit
@@ -120,7 +115,7 @@ Subscribers
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 .. image:: https://gstatic.com/cloudssh/images/open-btn.png
-   :target: https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/GoogleCloudPlatform/python-docs-samples&page=editor&open_in_editor=pubsub/cloud-client/subscriber.py;pubsub/cloud-client/README.rst
+   :target: https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/GoogleCloudPlatform/python-docs-samples&page=editor&open_in_editor=pubsub/cloud-client/subscriber.py,pubsub/cloud-client/README.rst
 
 
 
@@ -132,8 +127,8 @@ To run this sample:
     $ python subscriber.py
 
     usage: subscriber.py [-h]
-                         project
-                         {list_in_topic,list_in_project,create,delete,receive,receive-flow-control}
+                         project_id
+                         {list_in_topic,list_in_project,create,create-push,delete,update,receive,receive-custom-attributes,receive-flow-control,receive-synchronously,receive-synchronously-with-lease,listen_for_errors}
                          ...
 
     This application demonstrates how to perform basic operations on
@@ -143,16 +138,28 @@ To run this sample:
     at https://cloud.google.com/pubsub/docs.
 
     positional arguments:
-      project               Your Google Cloud project ID
-      {list_in_topic,list_in_project,create,delete,receive,receive-flow-control}
+      project_id            Your Google Cloud project ID
+      {list_in_topic,list_in_project,create,create-push,delete,update,receive,receive-custom-attributes,receive-flow-control,receive-synchronously,receive-synchronously-with-lease,listen_for_errors}
         list_in_topic       Lists all subscriptions for a given topic.
         list_in_project     Lists all subscriptions in the current project.
         create              Create a new pull subscription on the given topic.
+        create-push         Create a new push subscription on the given topic.
         delete              Deletes an existing Pub/Sub topic.
+        update              Updates an existing Pub/Sub subscription's push
+                            endpoint URL. Note that certain properties of a
+                            subscription, such as its topic, are not modifiable.
         receive             Receives messages from a pull subscription.
+        receive-custom-attributes
+                            Receives messages from a pull subscription.
         receive-flow-control
                             Receives messages from a pull subscription with flow
                             control.
+        receive-synchronously
+                            Pulling messages synchronously.
+        receive-synchronously-with-lease
+                            Pulling messages synchronously with lease management
+        listen_for_errors   Receives messages and catches errors from a pull
+                            subscription.
 
     optional arguments:
       -h, --help            show this help message and exit
@@ -163,7 +170,7 @@ Identity and Access Management
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 .. image:: https://gstatic.com/cloudssh/images/open-btn.png
-   :target: https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/GoogleCloudPlatform/python-docs-samples&page=editor&open_in_editor=pubsub/cloud-client/iam.py;pubsub/cloud-client/README.rst
+   :target: https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/GoogleCloudPlatform/python-docs-samples&page=editor&open_in_editor=pubsub/cloud-client/iam.py,pubsub/cloud-client/README.rst
 
 
 

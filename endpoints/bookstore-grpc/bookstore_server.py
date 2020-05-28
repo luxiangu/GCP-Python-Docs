@@ -15,18 +15,23 @@
 """The Python gRPC Bookstore Server Example."""
 
 import argparse
+from concurrent import futures
+import os
 import time
 
 from google.protobuf import struct_pb2
+import grpc
 
 import bookstore
-from generated_pb2 import bookstore_pb2
+import bookstore_pb2
+import bookstore_pb2_grpc
 import status
+
 
 _ONE_DAY_IN_SECONDS = 60 * 60 * 24
 
 
-class BookstoreServicer(bookstore_pb2.BetaBookstoreServicer):
+class BookstoreServicer(bookstore_pb2_grpc.BookstoreServicer):
     """Implements the bookstore API server."""
     def __init__(self, store):
         self._store = store
@@ -80,7 +85,7 @@ def create_sample_bookstore():
     _, fiction = store.create_shelf(shelf)
 
     book = bookstore_pb2.Book()
-    book.title = 'README'
+    book.title = 'REAMDE'
     book.author = "Neal Stephenson"
     store.create_book(fiction, book)
 
@@ -98,11 +103,15 @@ def create_sample_bookstore():
 
 def serve(port, shutdown_grace_duration):
     """Configures and runs the bookstore API server."""
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+
     store = create_sample_bookstore()
-    server = bookstore_pb2.beta_create_Bookstore_server(
-        BookstoreServicer(store))
+    bookstore_pb2_grpc.add_BookstoreServicer_to_server(
+        BookstoreServicer(store), server)
     server.add_insecure_port('[::]:{}'.format(port))
     server.start()
+
+    print('Listening on port {}'.format(port))
 
     try:
         while True:
@@ -116,11 +125,20 @@ if __name__ == '__main__':
         description=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument(
-        '--port', type=int, default=8000, help='The port to listen on')
+        '--port', type=int, default=None,
+        help='The port to listen on.'
+             'If arg is not set, will listen on the $PORT env var.'
+             'If env var is empty, defaults to 8000.')
     parser.add_argument(
         '--shutdown_grace_duration', type=int, default=5,
         help='The shutdown grace duration, in seconds')
 
     args = parser.parse_args()
 
-    serve(args.port, args.shutdown_grace_duration)
+    port = args.port
+    if not port:
+        port = os.environ.get('PORT')
+    if not port:
+        port = 8000
+
+    serve(port, args.shutdown_grace_duration)
