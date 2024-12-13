@@ -1,4 +1,4 @@
-# Copyright 2019 Google LLC All Rights Reserved.
+# Copyright 2019 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ def test_quickstart(capsys, test_book):
     def eventually_consistent_test():
         quickstart.list_books()
         out, _ = capsys.readouterr()
-        assert test_book.title in out
+        with quickstart.client.context():
+            assert test_book.title in out
 
     eventually_consistent_test()

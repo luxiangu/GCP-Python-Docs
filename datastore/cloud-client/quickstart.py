@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2016 Google Inc. All Rights Reserved.
+# Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,22 +24,22 @@ def run_quickstart():
     datastore_client = datastore.Client()
 
     # The kind for the new entity
-    kind = 'Task'
+    kind = "Task"
     # The name/ID for the new entity
-    name = 'sampletask1'
+    name = "sampletask1"
     # The Cloud Datastore key for the new entity
     task_key = datastore_client.key(kind, name)
 
     # Prepares the new entity
     task = datastore.Entity(key=task_key)
-    task['description'] = 'Buy milk'
+    task["description"] = "Buy milk"
 
     # Saves the entity
     datastore_client.put(task)
 
-    print('Saved {}: {}'.format(task.key.name, task['description']))
+    print(f"Saved {task.key.name}: {task['description']}")
     # [END datastore_quickstart]
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     run_quickstart()

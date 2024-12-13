@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc. All rights reserved.
+# Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -39,12 +39,12 @@ class Article(ndb.Model):
 
 
 class ArticleWithDifferentDatastoreName(ndb.Model):
-    title = ndb.StringProperty('t')
+    title = ndb.StringProperty("t")
 
 
 class Employee(ndb.Model):
-    full_name = ndb.StringProperty('n')
-    retirement_age = ndb.IntegerProperty('r')
+    full_name = ndb.StringProperty("n")
+    retirement_age = ndb.IntegerProperty("r")
 
 
 class Manager(ndb.Model):

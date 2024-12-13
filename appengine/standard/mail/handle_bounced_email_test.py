@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc. All rights reserved.
+# Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -19,6 +19,6 @@ import handle_bounced_email
 
 def test_handle_bounced_email(testbed):
     handler = handle_bounced_email.LogBounceHandler()
-    handler.request = 'request'
+    handler.request = "request"
     bounced_message = BounceNotification({})
     handler.receive(bounced_message)

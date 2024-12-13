@@ -1,4 +1,4 @@
-# Copyright 2018 Google LLC All Rights Reserved.
+# Copyright 2018 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,16 +22,16 @@ import pytest
 
 # Add datasets for bootstrapping datasets for testing
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "datasets"))  # noqa
-import datasets  # noqa
+from create_dataset import create_dataset  # noqa
+from delete_dataset import delete_dataset  # noqa
 import dicom_stores  # noqa
 import dicomweb  # noqa
 
-cloud_region = "us-central1"
-base_url = "https://healthcare.googleapis.com/v1"
+location = "us-central1"
 project_id = os.environ["GOOGLE_CLOUD_PROJECT"]
 
-dataset_id = "test_dataset-{}".format(uuid.uuid4())
-dicom_store_id = "test_dicom_store_{}".format(uuid.uuid4())
+dataset_id = f"test_dataset-{uuid.uuid4()}"
+dicom_store_id = f"test_dicom_store_{uuid.uuid4()}"
 
 RESOURCES = os.path.join(os.path.dirname(__file__), "resources")
 dcm_file_name = "dicom_00000001_000.dcm"
@@ -50,13 +50,13 @@ def test_dataset():
     @backoff.on_exception(backoff.expo, HttpError, max_time=60)
     def create():
         try:
-            datasets.create_dataset(project_id, cloud_region, dataset_id)
+            create_dataset(project_id, location, dataset_id)
         except HttpError as err:
             # We ignore 409 conflict here, because we know it's most
             # likely the first request failed on the client side, but
             # the creation suceeded on the server side.
             if err.resp.status == 409:
-                print("Got exception {} while creating dataset".format(err.resp.status))
+                print(f"Got exception {err.resp.status} while creating dataset")
             else:
                 raise
 
@@ -68,11 +68,11 @@ def test_dataset():
     @backoff.on_exception(backoff.expo, HttpError, max_time=60)
     def clean_up():
         try:
-            datasets.delete_dataset(project_id, cloud_region, dataset_id)
+            delete_dataset(project_id, location, dataset_id)
         except HttpError as err:
             # The API returns 403 when the dataset doesn't exist.
             if err.resp.status == 403:
-                print("Got exception {} while deleting dataset".format(err.resp.status))
+                print(f"Got exception {err.resp.status} while deleting dataset")
             else:
                 raise
 
@@ -85,7 +85,7 @@ def test_dicom_store():
     def create():
         try:
             dicom_stores.create_dicom_store(
-                project_id, cloud_region, dataset_id, dicom_store_id
+                project_id, location, dataset_id, dicom_store_id
             )
         except HttpError as err:
             # We ignore 409 conflict here, because we know it's most
@@ -109,7 +109,7 @@ def test_dicom_store():
     def clean_up():
         try:
             dicom_stores.delete_dicom_store(
-                project_id, cloud_region, dataset_id, dicom_store_id
+                project_id, location, dataset_id, dicom_store_id
             )
         except HttpError as err:
             # The API returns 404 when the DICOM store doesn't exist.
@@ -130,7 +130,7 @@ def test_dicom_store():
 
 def test_dicomweb_store_instance(test_dataset, test_dicom_store, capsys):
     dicomweb.dicomweb_store_instance(
-        base_url, project_id, cloud_region, dataset_id, dicom_store_id, dcm_file
+        project_id, location, dataset_id, dicom_store_id, dcm_file
     )
 
     out, _ = capsys.readouterr()
@@ -140,17 +140,9 @@ def test_dicomweb_store_instance(test_dataset, test_dicom_store, capsys):
 
 
 def test_dicomweb_search_instance_studies(test_dataset, test_dicom_store, capsys):
-    dicomweb.dicomweb_store_instance(
-        base_url, project_id, cloud_region, dataset_id, dicom_store_id, dcm_file
-    )
+    dicomweb.dicomweb_search_instance(project_id, location, dataset_id, dicom_store_id)
 
-    dicomweb.dicomweb_search_instance(
-        base_url, project_id, cloud_region, dataset_id, dicom_store_id
-    )
-
-    dicomweb.dicomweb_search_studies(
-        base_url, project_id, cloud_region, dataset_id, dicom_store_id
-    )
+    dicomweb.dicomweb_search_studies(project_id, location, dataset_id, dicom_store_id)
 
     out, _ = capsys.readouterr()
 
@@ -162,12 +154,8 @@ def test_dicomweb_search_instance_studies(test_dataset, test_dicom_store, capsys
 
 def test_dicomweb_retrieve_study(test_dataset, test_dicom_store, capsys):
     try:
-        dicomweb.dicomweb_store_instance(
-            base_url, project_id, cloud_region, dataset_id, dicom_store_id, dcm_file
-        )
-
         dicomweb.dicomweb_retrieve_study(
-            base_url, project_id, cloud_region, dataset_id, dicom_store_id, study_uid
+            project_id, location, dataset_id, dicom_store_id, study_uid
         )
 
         # Assert study was downloaded
@@ -185,14 +173,9 @@ def test_dicomweb_retrieve_study(test_dataset, test_dicom_store, capsys):
 
 def test_dicomweb_retrieve_instance(test_dataset, test_dicom_store, capsys):
     try:
-        dicomweb.dicomweb_store_instance(
-            base_url, project_id, cloud_region, dataset_id, dicom_store_id, dcm_file
-        )
-
         dicomweb.dicomweb_retrieve_instance(
-            base_url,
             project_id,
-            cloud_region,
+            location,
             dataset_id,
             dicom_store_id,
             study_uid,
@@ -215,14 +198,9 @@ def test_dicomweb_retrieve_instance(test_dataset, test_dicom_store, capsys):
 
 def test_dicomweb_retrieve_rendered(test_dataset, test_dicom_store, capsys):
     try:
-        dicomweb.dicomweb_store_instance(
-            base_url, project_id, cloud_region, dataset_id, dicom_store_id, dcm_file
-        )
-
         dicomweb.dicomweb_retrieve_rendered(
-            base_url,
             project_id,
-            cloud_region,
+            location,
             dataset_id,
             dicom_store_id,
             study_uid,
@@ -244,12 +222,8 @@ def test_dicomweb_retrieve_rendered(test_dataset, test_dicom_store, capsys):
 
 
 def test_dicomweb_delete_study(test_dataset, test_dicom_store, capsys):
-    dicomweb.dicomweb_store_instance(
-        base_url, project_id, cloud_region, dataset_id, dicom_store_id, dcm_file
-    )
-
     dicomweb.dicomweb_delete_study(
-        base_url, project_id, cloud_region, dataset_id, dicom_store_id, study_uid
+        project_id, location, dataset_id, dicom_store_id, study_uid
     )
 
     out, _ = capsys.readouterr()

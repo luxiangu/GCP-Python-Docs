@@ -25,6 +25,7 @@ required_envvars+=(
 pass_down_envvars+=(
     "BUILD_SPECIFIC_GCLOUD_PROJECT"
     "REPORT_TO_BUILD_COP_BOT"
+    "INJECT_REGION_TAGS"
     # Target directories.
     "RUN_TESTS_DIRS"
     # The nox session to run.
@@ -46,7 +47,7 @@ if [[ -z "${TRAMPOLINE_IMAGE:-}" ]]; then
 fi
 
 if [[ -z "${TRAMPOLINE_DOCKERFILE:-}" ]]; then
-    TRAMPOLINE_DOCKERFILE=".kokoro/docker/Dockerfile"
+    TRAMPOLINE_DOCKERFILE=""
 fi
 
 if [[ -z "${RUN_TESTS_SESSION:-}" ]]; then

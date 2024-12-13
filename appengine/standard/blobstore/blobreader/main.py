@@ -1,3 +1,17 @@
+# Copyright 2021 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """A sample app that operates on GCS files with blobstore API's BlobReader."""
 
 import cloudstorage
@@ -13,17 +27,17 @@ class BlobreaderHandler(webapp2.RequestHandler):
         bucket = app_identity.get_default_gcs_bucket_name()
 
         # Cloud Storage file names are in the format /bucket/object.
-        filename = '/{}/blobreader_demo'.format(bucket)
+        filename = "/{}/blobreader_demo".format(bucket)
 
         # Create a file in Google Cloud Storage and write something to it.
-        with cloudstorage.open(filename, 'w') as filehandle:
-            filehandle.write('abcde\n')
+        with cloudstorage.open(filename, "w") as filehandle:
+            filehandle.write("abcde\n")
 
         # In order to read the contents of the file using the Blobstore API,
         # you must create a blob_key from the Cloud Storage file name.
         # Blobstore expects the filename to be in the format of:
         # /gs/bucket/object
-        blobstore_filename = '/gs{}'.format(filename)
+        blobstore_filename = "/gs{}".format(filename)
         blob_key = blobstore.create_gs_key(blobstore_filename)
 
         # [START gae_blobstore_reader]
@@ -44,14 +58,14 @@ class BlobreaderHandler(webapp2.RequestHandler):
         blob_reader_data = blob_reader.read()
 
         # Write the contents to the response.
-        self.response.headers['Content-Type'] = 'text/plain'
+        self.response.headers["Content-Type"] = "text/plain"
         self.response.write(blob_reader_data)
 
         # Set the read position back to 0, then read and write 3 bytes.
         blob_reader.seek(0)
         blob_reader_data = blob_reader.read(3)
         self.response.write(blob_reader_data)
-        self.response.write('\n')
+        self.response.write("\n")
 
         # Set the read position back to 0, then read and write one line (up to
         # and including a '\n' character) at a time.
@@ -64,6 +78,6 @@ class BlobreaderHandler(webapp2.RequestHandler):
         blobstore.delete(blob_key)
 
 
-app = webapp2.WSGIApplication([
-    ('/', BlobreaderHandler),
-    ('/blobreader', BlobreaderHandler)], debug=True)
+app = webapp2.WSGIApplication(
+    [("/", BlobreaderHandler), ("/blobreader", BlobreaderHandler)], debug=True
+)

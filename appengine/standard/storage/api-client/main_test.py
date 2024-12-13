@@ -1,4 +1,4 @@
-# Copyright 2015 Google Inc. All rights reserved.
+# Copyright 2015 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,16 +19,14 @@ import webtest
 
 import main
 
-PROJECT = os.environ['GCLOUD_PROJECT']
+PROJECT = os.environ["GOOGLE_CLOUD_PROJECT"]
 
 
 def test_get():
     main.BUCKET_NAME = PROJECT
     app = webtest.TestApp(main.app)
 
-    response = app.get('/')
+    response = app.get("/")
 
     assert response.status_int == 200
-    assert re.search(
-        re.compile(r'.*.*items.*etag.*', re.DOTALL),
-        response.body)
+    assert re.search(re.compile(r".*.*items.*etag.*", re.DOTALL), response.body)

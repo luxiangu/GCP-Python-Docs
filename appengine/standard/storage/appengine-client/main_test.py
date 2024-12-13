@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc. All rights reserved.
+# Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,14 +18,14 @@ import webtest
 
 import main
 
-PROJECT = os.environ['GCLOUD_PROJECT']
+PROJECT = os.environ["GOOGLE_CLOUD_PROJECT"]
 
 
 def test_get(testbed):
     main.BUCKET_NAME = PROJECT
     app = webtest.TestApp(main.app)
 
-    response = app.get('/')
+    response = app.get("/")
 
     assert response.status_int == 200
-    assert 'The demo ran successfully!' in response.body
+    assert "The demo ran successfully!" in response.body

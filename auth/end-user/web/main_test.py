@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc. All Rights Reserved.
+# Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ import pytest
 import main
 
 # Note: samples that do end-user auth are difficult to test in an automated
-# way. These tests are basic sanity checks.
+# way. These tests are basic confidence checks.
 
 
 @pytest.fixture
@@ -27,12 +27,12 @@ def client():
 
 
 def test_index_wo_credentials(client):
-    r = client.get('/')
+    r = client.get("/")
     assert r.status_code == 302
-    assert r.headers['location'].endswith('/authorize')
+    assert r.headers["location"].endswith("authorize")
 
 
 def test_authorize(client):
-    r = client.get('/authorize')
+    r = client.get("/authorize")
     assert r.status_code == 302
-    assert r.headers['location'].startswith('https://accounts.google.com')
+    assert r.headers["location"].startswith("https://accounts.google.com")

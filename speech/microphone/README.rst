@@ -18,6 +18,10 @@ This directory contains samples for Google Cloud Speech API. The `Google Cloud S
 
 .. _Google Cloud Speech API: https://cloud.google.com/speech/docs/
 
+
+
+
+
 Setup
 -------------------------------------------------------------------------------
 

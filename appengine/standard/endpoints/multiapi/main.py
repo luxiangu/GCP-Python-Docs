@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc. All rights reserved.
+# Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,33 +27,33 @@ class Response(messages.Message):
     message = messages.StringField(1)
 
 
-# [START multiclass]
-api_collection = endpoints.api(name='library', version='v1.0')
+# [START endpoints_multiclass]
+api_collection = endpoints.api(name="library", version="v1.0")
 
 
-@api_collection.api_class(resource_name='shelves')
+@api_collection.api_class(resource_name="shelves")
 class Shelves(remote.Service):
-
     @endpoints.method(Request, Response)
     def list(self, request):
         return Response()
 
 
-# [START books]
-@api_collection.api_class(resource_name='books', path='books')
+# [START endpoints_books]
+@api_collection.api_class(resource_name="books", path="books")
 class Books(remote.Service):
-
-    @endpoints.method(Request, Response, path='bookmark')
+    @endpoints.method(Request, Response, path="bookmark")
     def get_bookmark(self, request):
         return Response()
 
     @endpoints.method(Request, Response)
     def best_sellers_list(self, request):
         return Response()
-# [END books]
-# [END multiclass]
 
 
-# [START api_server]
+# [END endpoints_books]
+# [END endpoints_multiclass]
+
+
+# [START endpoints_api_server]
 api = endpoints.api_server([api_collection])
-# [END api_server]
+# [END endpoints_api_server]

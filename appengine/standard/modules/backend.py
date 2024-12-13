@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc. All rights reserved.
+# Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,6 +24,9 @@ class BackendHandler(webapp2.RequestHandler):
         self.response.write("hello world")
 
 
-app = webapp2.WSGIApplication([
-    ('/', BackendHandler),
-], debug=True)
+app = webapp2.WSGIApplication(
+    [
+        ("/", BackendHandler),
+    ],
+    debug=True,
+)

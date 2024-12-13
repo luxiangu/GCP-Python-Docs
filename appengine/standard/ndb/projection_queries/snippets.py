@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc. All rights reserved.
+# Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -57,5 +57,5 @@ class Foo(ndb.Model):
 
 
 def declare_multiple_valued_property():
-    entity = Foo(A=[1, 1, 2, 3], B=['x', 'y', 'x'])
+    entity = Foo(A=[1, 1, 2, 3], B=["x", "y", "x"])
     return entity

@@ -1,4 +1,4 @@
-# Copyright 2015 Google Inc. All rights reserved.
+# Copyright 2015 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,7 +20,8 @@ from appengine_helper import (
     pytest_configure,
     pytest_runtest_call,
     run_tasks,
-    testbed)
+    testbed,
+)
 import six
 
 (login)
@@ -32,9 +33,9 @@ import six
 
 def pytest_ignore_collect(path, config):
     """Skip App Engine tests in python 3 or if no SDK is available."""
-    if 'appengine/standard' in str(path):
+    if "appengine/standard" in str(path):
         if six.PY3:
             return True
-        if 'GAE_SDK_PATH' not in os.environ:
+        if "GAE_SDK_PATH" not in os.environ:
             return True
     return False

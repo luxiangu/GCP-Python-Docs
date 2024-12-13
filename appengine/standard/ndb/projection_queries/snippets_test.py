@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc. All rights reserved.
+# Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,9 +21,9 @@ def test_print_author_tags(testbed, capsys):
     snippets.print_author_tags()
 
     stdout, _ = capsys.readouterr()
-    assert 'Two' in stdout
-    assert 'three' in stdout
-    assert 'one' not in stdout
+    assert "Two" in stdout
+    assert "three" in stdout
+    assert "one" not in stdout
 
 
 def test_fetch_sub_properties(testbed):

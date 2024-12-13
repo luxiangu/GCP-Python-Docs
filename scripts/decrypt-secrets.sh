@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2015 Google Inc. All rights reserved.
+# Copyright 2015 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,10 +32,17 @@ fi
 PROJECT_ID="${SECRET_MANAGER_PROJECT:-cloud-devrel-kokoro-resources}"
 
 gcloud secrets versions access latest --secret="python-docs-samples-test-env" \
+       --project="${PROJECT_ID}" \
        > testing/test-env.sh
 gcloud secrets versions access latest \
        --secret="python-docs-samples-service-account" \
+       --project="${PROJECT_ID}" \
        > testing/service-account.json
 gcloud secrets versions access latest \
        --secret="python-docs-samples-client-secrets" \
+       --project="${PROJECT_ID}" \
        > testing/client-secrets.json
+gcloud secrets versions access latest \
+       --secret="cloudai-samples-secrets" \
+       --project="python-docs-samples-tests" \
+       > testing/cloudai-samples-secrets.sh

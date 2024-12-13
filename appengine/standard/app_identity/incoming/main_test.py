@@ -1,4 +1,4 @@
-# Copyright 2015 Google Inc. All rights reserved.
+# Copyright 2015 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,9 +20,7 @@ import main
 def test_app(testbed):
     app = webtest.TestApp(main.app)
 
-    response = app.get('/', status=403)
+    response = app.get("/", status=403)
 
-    response = app.get('/', headers={
-        'X-Appengine-Inbound-Appid': 'other-app-id'
-    })
+    response = app.get("/", headers={"X-Appengine-Inbound-Appid": "other-app-id"})
     assert response.status_int == 200

@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc. All rights reserved.
+# Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,11 +22,11 @@ def test_all(testbed, run_tasks):
     test_app = webtest.TestApp(application.app)
     test_worker = webtest.TestApp(worker.app)
 
-    response = test_app.get('/')
-    assert '0' in response.body
+    response = test_app.get("/")
+    assert "0" in response.body
 
-    test_app.post('/enqueue', {'amount': 5})
+    test_app.post("/enqueue", {"amount": 5})
     run_tasks(test_worker)
 
-    response = test_app.get('/')
-    assert '5' in response.body
+    response = test_app.get("/")
+    assert "5" in response.body

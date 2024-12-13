@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc. All rights reserved.
+# Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,6 +19,6 @@ def test_index(testbed):
     import main
 
     app = main.app.test_client()
-    response = app.get('/')
+    response = app.get("/")
     assert response.status_code == 200
-    assert 'Google' in response.data.decode('utf-8')
+    assert "Google" in response.data.decode("utf-8")

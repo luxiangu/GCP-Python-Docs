@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc. All Rights Reserved.
+# Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,10 +18,11 @@ import pytest
 @pytest.fixture
 def app():
     import main
+
     main.app.testing = True
     return main.app.test_client()
 
 
 def test_index(app):
-    r = app.get('/')
+    r = app.get("/")
     assert r.status_code == 200

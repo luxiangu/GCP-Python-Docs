@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc. All rights reserved.
+# Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,9 +21,11 @@ import webapp2
 # [START bounce_handler]
 class LogBounceHandler(BounceNotificationHandler):
     def receive(self, bounce_message):
-        logging.info('Received bounce post ... [%s]', self.request)
-        logging.info('Bounce original: %s', bounce_message.original)
-        logging.info('Bounce notification: %s', bounce_message.notification)
+        logging.info("Received bounce post ... [%s]", self.request)
+        logging.info("Bounce original: %s", bounce_message.original)
+        logging.info("Bounce notification: %s", bounce_message.notification)
+
+
 # [END bounce_handler]
 
 

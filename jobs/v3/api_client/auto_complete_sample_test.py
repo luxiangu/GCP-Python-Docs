@@ -1,4 +1,4 @@
-# Copyright 2018 Google LLC. All Rights Reserved.
+# Copyright 2018 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,12 +33,12 @@ def test_auto_complete_sample(company_name, capsys):
         auto_complete_sample.run_sample(company_name)
         out, _ = capsys.readouterr()
         expected = (
-            '.*completionResults.*'
-            'suggestion.*Google.*type.*COMPANY_NAME.*\n'
-            '.*completionResults.*'
-            'suggestion.*Software Engineer.*type.*JOB_TITLE.*\n'
-            '.*completionResults.*'
-            'suggestion.*Software Engineer.*type.*JOB_TITLE.*\n'
+            ".*completionResults.*"
+            "suggestion.*Google.*type.*COMPANY_NAME.*\n"
+            ".*completionResults.*"
+            "suggestion.*Software Engineer.*type.*JOB_TITLE.*\n"
+            ".*completionResults.*"
+            "suggestion.*Software Engineer.*type.*JOB_TITLE.*\n"
         )
         assert re.search(expected, out)
 

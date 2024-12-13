@@ -1,4 +1,4 @@
-# Copyright 2018 Google LLC All Rights Reserved.
+# Copyright 2018 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,57 +17,76 @@ import sys
 import uuid
 
 import backoff
+from google.api_core import retry
 from google.cloud import storage
+from googleapiclient import discovery
 from googleapiclient.errors import HttpError
 import pytest
 
 # Add datasets for bootstrapping datasets for testing
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "datasets"))  # noqa
-import datasets  # noqa
+from create_dataset import create_dataset  # noqa
+from delete_dataset import delete_dataset  # noqa
 import fhir_stores  # noqa
 
 
-cloud_region = "us-central1"
+location = "us-central1"
 project_id = os.environ["GOOGLE_CLOUD_PROJECT"]
 
-dataset_id = "test_dataset_{}".format(uuid.uuid4())
-fhir_store_id = "test_fhir_store-{}".format(uuid.uuid4())
+dataset_id = f"test_dataset_{uuid.uuid4()}"
+fhir_store_id = f"test_fhir_store-{uuid.uuid4()}"
+version = "R4"
+pubsub_topic = ""
 
 gcs_uri = os.environ["CLOUD_STORAGE_BUCKET"]
 RESOURCES = os.path.join(os.path.dirname(__file__), "resources")
 source_file_name = "Patient.json"
 resource_file = os.path.join(RESOURCES, source_file_name)
-import_object = "{}/{}".format(gcs_uri, source_file_name)
+import_object = f"{gcs_uri}/{source_file_name}"
+
+
+BACKOFF_MAX_TIME = 750
+
+client = discovery.build("healthcare", "v1")
+
+
+class OperationNotComplete(Exception):
+    """Operation is not yet complete"""
+
+
+@retry.Retry(predicate=retry.if_exception_type(OperationNotComplete))
+def wait_for_operation(operation_name: str):
+    operation = (
+        client.projects()
+        .locations()
+        .datasets()
+        .operations()
+        .get(name=operation_name)
+        .execute()
+    )
+
+    if not operation.get("done", False):
+        raise OperationNotComplete(operation)
 
 
 @pytest.fixture(scope="module")
 def test_dataset():
-    @backoff.on_exception(backoff.expo, HttpError, max_time=60)
-    def create():
-        try:
-            datasets.create_dataset(project_id, cloud_region, dataset_id)
-        except HttpError as err:
-            # We ignore 409 conflict here, because we know it's most
-            # likely the first request failed on the client side, but
-            # the creation suceeded on the server side.
-            if err.resp.status == 409:
-                print("Got exception {} while creating dataset".format(err.resp.status))
-            else:
-                raise
+    operation = create_dataset(project_id, location, dataset_id)
 
-    create()
+    # Wait for the dataset to be created
+    wait_for_operation(operation["name"])
 
     yield
 
     # Clean up
-    @backoff.on_exception(backoff.expo, HttpError, max_time=60)
+    @backoff.on_exception(backoff.expo, HttpError, max_time=BACKOFF_MAX_TIME)
     def clean_up():
         try:
-            datasets.delete_dataset(project_id, cloud_region, dataset_id)
+            delete_dataset(project_id, location, dataset_id)
         except HttpError as err:
             # The API returns 403 when the dataset doesn't exist.
             if err.resp.status == 404 or err.resp.status == 403:
-                print("Got exception {} while deleting dataset".format(err.resp.status))
+                print(f"Got exception {err.resp.status} while deleting dataset")
             else:
                 raise
 
@@ -76,20 +95,18 @@ def test_dataset():
 
 @pytest.fixture(scope="module")
 def test_fhir_store():
-    @backoff.on_exception(backoff.expo, HttpError, max_time=60)
+    @backoff.on_exception(backoff.expo, HttpError, max_time=BACKOFF_MAX_TIME)
     def create():
         try:
             fhir_stores.create_fhir_store(
-                project_id, cloud_region, dataset_id, fhir_store_id
+                project_id, location, dataset_id, fhir_store_id, version
             )
         except HttpError as err:
             # We ignore 409 conflict here, because we know it's most
             # likely the first request failed on the client side, but
             # the creation suceeded on the server side.
             if err.resp.status == 409:
-                print(
-                    "Got exception {} while creating FHIR store".format(err.resp.status)
-                )
+                print(f"Got exception {err.resp.status} while creating FHIR store")
             else:
                 raise
 
@@ -98,11 +115,11 @@ def test_fhir_store():
     yield
 
     # Clean up
-    @backoff.on_exception(backoff.expo, HttpError, max_time=60)
+    @backoff.on_exception(backoff.expo, HttpError, max_time=BACKOFF_MAX_TIME)
     def clean_up():
         try:
             fhir_stores.delete_fhir_store(
-                project_id, cloud_region, dataset_id, fhir_store_id
+                project_id, location, dataset_id, fhir_store_id
             )
         except HttpError as err:
             # The API returns 404 when the FHIR store doesn't exist.
@@ -110,9 +127,7 @@ def test_fhir_store():
             # if we try to delete a FHIR store when the parent dataset
             # doesn't exist, the server will return a 403.
             if err.resp.status == 404 or err.resp.status == 403:
-                print(
-                    "Got exception {} while deleting FHIR store".format(err.resp.status)
-                )
+                print(f"Got exception {err.resp.status} while deleting FHIR store")
             else:
                 raise
 
@@ -124,11 +139,11 @@ def crud_fhir_store_id():
     yield fhir_store_id
 
     # Clean up
-    @backoff.on_exception(backoff.expo, HttpError, max_time=60)
+    @backoff.on_exception(backoff.expo, HttpError, max_time=BACKOFF_MAX_TIME)
     def clean_up():
         try:
             fhir_stores.delete_fhir_store(
-                project_id, cloud_region, dataset_id, fhir_store_id
+                project_id, location, dataset_id, fhir_store_id
             )
         except HttpError as err:
             # The API returns 404 when the FHIR store doesn't exist.
@@ -136,9 +151,7 @@ def crud_fhir_store_id():
             # if we try to delete a FHIR store when the parent dataset
             # doesn't exist, the server will return a 403.
             if err.resp.status == 404 or err.resp.status == 403:
-                print(
-                    "Got exception {} while deleting FHIR store".format(err.resp.status)
-                )
+                print(f"Got exception {err.resp.status} while deleting FHIR store")
             else:
                 raise
 
@@ -147,7 +160,7 @@ def crud_fhir_store_id():
 
 @pytest.fixture(scope="module")
 def blob():
-    @backoff.on_exception(backoff.expo, HttpError, max_time=60)
+    @backoff.on_exception(backoff.expo, HttpError, max_time=BACKOFF_MAX_TIME)
     def create():
         try:
             storage_client = storage.Client()
@@ -160,7 +173,7 @@ def blob():
             # the create going through on the server side but
             # failing on the client.
             if err.resp.status == 409:
-                print("Got exception {} while creating dataset".format(err.resp.status))
+                print(f"Got exception {err.resp.status} while creating dataset")
             else:
                 raise
 
@@ -169,7 +182,7 @@ def blob():
     yield
 
     # Clean up
-    @backoff.on_exception(backoff.expo, HttpError, max_time=60)
+    @backoff.on_exception(backoff.expo, HttpError, max_time=BACKOFF_MAX_TIME)
     def clean_up():
         try:
             blob.delete()
@@ -185,13 +198,31 @@ def blob():
 
 
 def test_crud_fhir_store(test_dataset, capsys):
-    fhir_stores.create_fhir_store(project_id, cloud_region, dataset_id, fhir_store_id)
+    @backoff.on_exception(backoff.expo, HttpError, max_time=BACKOFF_MAX_TIME)
+    def _create():
+        fhir_stores.create_fhir_store(
+            project_id, location, dataset_id, fhir_store_id, version
+        )
 
-    fhir_stores.get_fhir_store(project_id, cloud_region, dataset_id, fhir_store_id)
+    _create()
 
-    fhir_stores.list_fhir_stores(project_id, cloud_region, dataset_id)
+    @backoff.on_exception(backoff.expo, HttpError, max_time=BACKOFF_MAX_TIME)
+    def _get():
+        fhir_stores.get_fhir_store(project_id, location, dataset_id, fhir_store_id)
 
-    fhir_stores.delete_fhir_store(project_id, cloud_region, dataset_id, fhir_store_id)
+    _get()
+
+    @backoff.on_exception(backoff.expo, HttpError, max_time=BACKOFF_MAX_TIME)
+    def _list():
+        fhir_stores.list_fhir_stores(project_id, location, dataset_id)
+
+    _list()
+
+    @backoff.on_exception(backoff.expo, HttpError, max_time=BACKOFF_MAX_TIME)
+    def _delete():
+        fhir_stores.delete_fhir_store(project_id, location, dataset_id, fhir_store_id)
+
+    _delete()
 
     out, _ = capsys.readouterr()
 
@@ -203,9 +234,7 @@ def test_crud_fhir_store(test_dataset, capsys):
 
 
 def test_get_fhir_store_metadata(test_dataset, test_fhir_store, capsys):
-    fhir_stores.get_fhir_store_metadata(
-        project_id, cloud_region, dataset_id, fhir_store_id
-    )
+    fhir_stores.get_fhir_store_metadata(project_id, location, dataset_id, fhir_store_id)
 
     out, _ = capsys.readouterr()
 
@@ -213,7 +242,9 @@ def test_get_fhir_store_metadata(test_dataset, test_fhir_store, capsys):
 
 
 def test_patch_fhir_store(test_dataset, test_fhir_store, capsys):
-    fhir_stores.patch_fhir_store(project_id, cloud_region, dataset_id, fhir_store_id)
+    fhir_stores.patch_fhir_store(
+        project_id, location, dataset_id, fhir_store_id, pubsub_topic
+    )
 
     out, _ = capsys.readouterr()
 
@@ -222,7 +253,11 @@ def test_patch_fhir_store(test_dataset, test_fhir_store, capsys):
 
 def test_import_fhir_store_gcs(test_dataset, test_fhir_store, blob, capsys):
     fhir_stores.import_fhir_resources(
-        project_id, cloud_region, dataset_id, fhir_store_id, import_object,
+        project_id,
+        location,
+        dataset_id,
+        fhir_store_id,
+        import_object,
     )
 
     out, _ = capsys.readouterr()
@@ -231,7 +266,11 @@ def test_import_fhir_store_gcs(test_dataset, test_fhir_store, blob, capsys):
 
 def test_export_fhir_store_gcs(test_dataset, test_fhir_store, capsys):
     fhir_stores.export_fhir_store_gcs(
-        project_id, cloud_region, dataset_id, fhir_store_id, gcs_uri,
+        project_id,
+        location,
+        dataset_id,
+        fhir_store_id,
+        gcs_uri,
     )
 
     out, _ = capsys.readouterr()
@@ -241,12 +280,12 @@ def test_export_fhir_store_gcs(test_dataset, test_fhir_store, capsys):
 
 def test_get_set_fhir_store_iam_policy(test_dataset, test_fhir_store, capsys):
     get_response = fhir_stores.get_fhir_store_iam_policy(
-        project_id, cloud_region, dataset_id, fhir_store_id
+        project_id, location, dataset_id, fhir_store_id
     )
 
     set_response = fhir_stores.set_fhir_store_iam_policy(
         project_id,
-        cloud_region,
+        location,
         dataset_id,
         fhir_store_id,
         "serviceAccount:python-docs-samples-tests@appspot.gserviceaccount.com",

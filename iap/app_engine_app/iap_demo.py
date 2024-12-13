@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc. All Rights Reserved.
+# Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,14 +33,14 @@ from google.appengine.api import users
 app = flask.Flask(__name__)
 
 
-@app.route('/')
+@app.route("/")
 def echo_jwt():
-    return 'x-goog-authenticated-user-jwt: {}'.format(
-        flask.request.headers.get('x-goog-iap-jwt-assertion'))
+    return "x-goog-authenticated-user-jwt: {}".format(
+        flask.request.headers.get("x-goog-iap-jwt-assertion")
+    )
 
 
-@app.route('/identity')
+@app.route("/identity")
 def show_identity():
     user = users.get_current_user()
-    return 'Authenticated as {} ({})'.format(
-        user.email(), user.user_id())
+    return "Authenticated as {} ({})".format(user.email(), user.user_id())

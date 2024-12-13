@@ -19,18 +19,25 @@ set -eo pipefail
 # Enables `**` to include files nested inside sub-folders
 shopt -s globstar
 
+# If on kokoro, add btlr to the path
+if [ -n "$KOKORO_GFILE_DIR" ]; then
+  bltr_dir="$KOKORO_GFILE_DIR/v0.0.3/"
+  chmod +x "${bltr_dir}"btlr
+  export PATH="$PATH:$bltr_dir"
+fi
+
 DIFF_FROM=""
 
-# `--only-diff-master` will only run tests on project changes on the
-# last common commit from the master branch.
-if [[ $* == *--only-diff-master* ]]; then
+# `--only-diff-main` will only run tests on project changes on the
+# last common commit from the main branch.
+if [[ $* == *--only-diff-main* ]]; then
     set +e
-    git diff --quiet "origin/master..." .kokoro/tests .kokoro/docker \
+    git diff --quiet "origin/main..." .kokoro/tests .kokoro/docker \
 	.kokoro/trampoline_v2.sh
     CHANGED=$?
     set -e
     if [[ "${CHANGED}" -eq 0 ]]; then
-	DIFF_FROM="origin/master..."
+	DIFF_FROM="origin/main..."
     else
 	echo "Changes to test driver files detected. Running full tests."
     fi
@@ -39,7 +46,36 @@ fi
 # `--only-diff-head` will only run tests on project changes from the
 # previous commit.
 if [[ $* == *--only-diff-head* ]]; then
-    DIFF_FROM="HEAD~.."
+    set +e
+    git diff --quiet "HEAD~.." .kokoro/tests .kokoro/docker \
+	.kokoro/trampoline_v2.sh
+    CHANGED=$?
+    set -e
+    if [[ "${CHANGED}" -eq 0 ]]; then
+	DIFF_FROM="HEAD~.."
+    else
+	echo "Changes to test driver files detected. Running full tests."
+    fi
+fi
+
+# Because Kokoro runs presubmit builds simalteneously, we often see
+# quota related errors. I think we can avoid this by changing the
+# order of tests to execute (e.g. reverse order for py-3.8
+# build). Currently there's no easy way to do that with btlr, so we
+# temporarily wait few minutes to avoid quota issue for some
+# presubmit builds.
+if [[ "${KOKORO_JOB_NAME}" == *presubmit ]] \
+       && [[ -z "${DIFF_FROM:-}" ]]; then
+    if [[ "${RUN_TESTS_SESSION}" == "py-3.7" ]]; then
+	echo -n "Detected py-3.7 presubmit full build,"
+	echo "Wait 5 minutes to avoid quota issues."
+	sleep 5m
+    fi
+    if [[ "${RUN_TESTS_SESSION}" == "py-3.8" ]]; then
+	echo -n "Detected py-3.8 presubmit full build,"
+	echo "Wait 10 minutes to avoid quota issues."
+	sleep 10m
+    fi
 fi
 
 if [[ -z "${PROJECT_ROOT:-}" ]]; then
@@ -51,22 +87,37 @@ cd "${PROJECT_ROOT}"
 # add user's pip binary path to PATH
 export PATH="${HOME}/.local/bin:${PATH}"
 
+# upgrade pip when needed
+pip install --upgrade pip
+
+# Install virtualenv in version 20.21, since version 20.22 no longer supports Python 2.7
+if [[ "${RUN_TESTS_SESSION}" == "py-2.7" ]]; then
+  pip install --user -q virtualenv==20.21
+fi
+
 # install nox for testing
 pip install --user -q nox
 
-# Use secrets acessor service account to get secrets.
+# Use secrets acessor service account to get secrets
 if [[ -f "${KOKORO_GFILE_DIR}/secrets_viewer_service_account.json" ]]; then
     gcloud auth activate-service-account \
 	   --key-file="${KOKORO_GFILE_DIR}/secrets_viewer_service_account.json" \
 	   --project="cloud-devrel-kokoro-resources"
-    # This script will create 3 files:
+fi
+
+# On kokoro, we should be able to use the default service account. We
+# need to somehow bootstrap the secrets on other CI systems.
+if [[ "${TRAMPOLINE_CI}" == "kokoro" ]]; then
+    # This script will create 4 files:
     # - testing/test-env.sh
     # - testing/service-account.json
     # - testing/client-secrets.json
+    # - testing/cloudai-samples-secrets.sh
     ./scripts/decrypt-secrets.sh
 fi
 
 source ./testing/test-env.sh
+source ./testing/cloudai-samples-secrets.sh
 export GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/testing/service-account.json
 
 # For cloud-run session, we activate the service account for gcloud sdk.
@@ -81,11 +132,15 @@ export DATALABELING_ENDPOINT="test-datalabeling.sandbox.googleapis.com:443"
 # Run Cloud SQL proxy (background process exit when script does)
 wget --quiet https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 \
      -O ${HOME}/cloud_sql_proxy && chmod +x ${HOME}/cloud_sql_proxy
-${HOME}/cloud_sql_proxy -instances="${MYSQL_INSTANCE}"=tcp:3306 &>> \
+${HOME}/cloud_sql_proxy -instances="${MYSQL_INSTANCE}"=tcp:3306,"${MYSQL_INSTANCE}" -dir "${HOME}" &>> \
        ${HOME}/cloud_sql_proxy.log &
-${HOME}/cloud_sql_proxy -instances="${POSTGRES_INSTANCE}"=tcp:5432 &>> \
+echo -e "\Cloud SQL proxy started for MySQL."
+${HOME}/cloud_sql_proxy -instances="${POSTGRES_INSTANCE}"=tcp:5432,"${POSTGRES_INSTANCE}" -dir "${HOME}" &>> \
        ${HOME}/cloud_sql_proxy-postgres.log &
-echo -e "\nCloud SQL proxy started."
+echo -e "\Cloud SQL proxy started for Postgres."
+${HOME}/cloud_sql_proxy -instances="${SQLSERVER_INSTANCE}"=tcp:1433 &>> \
+       ${HOME}/cloud_sql_proxy-sqlserver.log &
+echo -e "\Cloud SQL proxy started for SQL Server."
 
 echo -e "\n******************** TESTING PROJECTS ********************"
 # Switch to 'fail at end' to allow all tests to complete before exiting.
@@ -94,102 +149,67 @@ set +e
 RTN=0
 ROOT=$(pwd)
 
-# Find all requirements.txt in the repository (may break on whitespace).
-for file in **/requirements.txt; do
-    cd "$ROOT"
-    # Navigate to the project folder.
-    file=$(dirname "$file")
-    cd "$file"
+# Setup DRIFT region tag injector
+# (only run on *some* builds)
+if [[ "${INJECT_REGION_TAGS:-}" == "true" ]]; then
+    echo "=== Setting up DRIFT region tag injector ==="
+    # install PyYaml (used by the DRIFT region tag parsing system)
+    echo "--- Installing pip packages ---"
+    python3 -m pip install --user pyyaml frozendict recordclass
 
-    # First we look up the environment variable `RUN_TESTS_DIRS`. If
-    # the value is set, we'll iterate through the colon separated
-    # directory list. If the target directory is not under any
-    # directory in the list, we skip this directory.
-    # This environment variables are primarily for
-    # `scripts/run_tests_local.sh`.
-    #
-    # The value must be a colon separated list of relative paths from
-    # the project root.
-    #
-    # Example:
-    #   cdn:appengine/flexible
-    #     run tests for `cdn` and `appengine/flexible` directories.
-    #   logging/cloud-client
-    #     only run tests for `logging/cloud-client` directory.
-    #
-    if [[ -n "${RUN_TESTS_DIRS:-}" ]]; then
-	match=0
-	for d in $(echo "${RUN_TESTS_DIRS}" | tr ":" "\n"); do
-	    # If the current dir starts with one of the
-	    # RUN_TESTS_DIRS, we should run the tests.
-	    if [[ "${file}" = "${d}"* ]]; then
-		match=1
-		break
-	    fi
-	done
-	if [[ $match -eq 0 ]]; then
-	    continue
-	fi
+    # Use ${HOME} because trampoline will automatically clean up this
+    # directory.
+    export REGION_TAG_PARSER_DIR="${HOME}/region-tag-parser"
+    export POLYGLOT_PARSER_PATH="${REGION_TAG_PARSER_DIR}/xunit-autolabeler-v2/cli_bootstrap.py"
+    export PYTHON_PARSER_PATH="${REGION_TAG_PARSER_DIR}/xunit-autolabeler-v2/ast_parser/python_bootstrap.py"
+
+    if [[ ! -f $POLYGLOT_PARSER_PATH ]]; then
+        echo "--- Fetching injection script from HEAD (via GitHub) ---"
+        git clone https://github.com/GoogleCloudPlatform/repo-automation-playground "$REGION_TAG_PARSER_DIR" --single-branch
+
+        chmod +x $PYTHON_PARSER_PATH
+        chmod +x $POLYGLOT_PARSER_PATH
     fi
-    # If $DIFF_FROM is set, use it to check for changes in this directory.
-    if [[ -n "${DIFF_FROM:-}" ]]; then
-        git diff --quiet "$DIFF_FROM" .
-        CHANGED=$?
-        if [[ "$CHANGED" -eq 0 ]]; then
-          # echo -e "\n Skipping $file: no changes in folder.\n"
-          continue
-        fi
-    fi
+    echo "=== Region tag injector setup complete ==="
+fi
 
-    echo "------------------------------------------------------------"
-    echo "- testing $file"
-    echo "------------------------------------------------------------"
+test_prog="${PROJECT_ROOT}/.kokoro/tests/run_single_test.sh"
 
-    # If no local noxfile exists, copy the one from root
-    if [[ ! -f "noxfile.py" ]]; then
-        PARENT_DIR=$(cd ../ && pwd)
-        while [[ "$PARENT_DIR" != "$ROOT" && ! -f "$PARENT_DIR/noxfile-template.py" ]];
-        do
-            PARENT_DIR=$(dirname "$PARENT_DIR")
-        done
-        cp "$PARENT_DIR/noxfile-template.py" "./noxfile.py"
-        echo -e "\n Using noxfile-template from parent folder ($PARENT_DIR). \n"
-        cleanup_noxfile=1
-    else
-        cleanup_noxfile=0
-    fi
+btlr_args=(
+    "run"
+    "--max-cmd-duration=60m"
+    "**/requirements.txt"
+)
 
-    # Use nox to execute the tests for the project.
-    nox -s "$RUN_TESTS_SESSION"
-    EXIT=$?
+if [[ -n "${NUM_TEST_WORKERS:-}" ]]; then
+    btlr_args+=(
+	"--max-concurrency"
+	"${NUM_TEST_WORKERS}"
+    )
+fi
 
-    # If REPORT_TO_BUILD_COP_BOT is set to "true", send the test log
-    # to the Build Cop Bot.
-    # See:
-    # https://github.com/googleapis/repo-automation-bots/tree/master/packages/buildcop.
-    if [[ "${REPORT_TO_BUILD_COP_BOT:-}" == "true" ]]; then
-      chmod +x $KOKORO_GFILE_DIR/linux_amd64/buildcop
-      $KOKORO_GFILE_DIR/linux_amd64/buildcop
-    fi
+if [[ -n "${DIFF_FROM:-}"  ]]; then
+    btlr_args+=(
+	"--git-diff"
+	"${DIFF_FROM} ."
+    )
+fi
 
-    if [[ $EXIT -ne 0 ]]; then
-      RTN=1
-      echo -e "\n Testing failed: Nox returned a non-zero exit code. \n"
-    else
-      echo -e "\n Testing completed.\n"
-    fi
+btlr_args+=(
+    "--"
+    "${test_prog}"
+)
 
-    # Remove noxfile.py if we copied.
-    if [[ $cleanup_noxfile -eq 1 ]]; then
-        rm noxfile.py
-    fi
+echo "btlr" "${btlr_args[@]}"
 
-done
+btlr "${btlr_args[@]}"
+
+RTN=$?
 cd "$ROOT"
 
 # Remove secrets if we used decrypt-secrets.sh.
 if [[ -f "${KOKORO_GFILE_DIR}/secrets_viewer_service_account.json" ]]; then
-    rm testing/{test-env.sh,client-secrets.json,service-account.json}
+    rm testing/{test-env.sh,client-secrets.json,service-account.json,cloudai-samples-secrets.sh}
 fi
 
 exit "$RTN"

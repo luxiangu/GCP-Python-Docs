@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc. All rights reserved.
+# Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,6 +20,6 @@ import main
 def test_blobreader(testbed, login):
     app = webtest.TestApp(main.app)
 
-    response = app.get('/blobreader')
+    response = app.get("/blobreader")
 
-    assert 'abcde\nabc\nabcde\n' in response
+    assert "abcde\nabc\nabcde\n" in response

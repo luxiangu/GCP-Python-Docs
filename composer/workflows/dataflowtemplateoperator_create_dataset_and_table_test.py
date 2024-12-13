@@ -23,7 +23,7 @@ from google.cloud import bigquery
 
 from . import dataflowtemplateoperator_create_dataset_and_table_helper as helper
 
-PROJECT_ID = os.environ["GCLOUD_PROJECT"]
+PROJECT_ID = os.environ["GOOGLE_CLOUD_PROJECT"]
 
 client = bigquery.Client()
 
@@ -48,6 +48,5 @@ def test_creation():
         assert table.schema == expected_schema
 
     finally:
-
         client.delete_dataset(dataset, delete_contents=True, not_found_ok=True)
         client.delete_table(table, not_found_ok=True)

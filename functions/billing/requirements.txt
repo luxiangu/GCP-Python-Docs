@@ -1,4 +1,4 @@
-slackclient==2.7.0
+slackclient==2.9.4
 # [START functions_billing_limit_appengine_deps]
-google-api-python-client==1.9.1
-# [START functions_billing_limit_appengine_deps]
+google-api-python-client==2.131.0
+# [END functions_billing_limit_appengine_deps]

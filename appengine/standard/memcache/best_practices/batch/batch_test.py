@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc. All rights reserved.
+# Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,5 +24,5 @@ def app(testbed):
 
 
 def test_get(app):
-    response = app.get('/')
-    assert 'Bill Holiday' in response.body
+    response = app.get("/")
+    assert "Bill Holiday" in response.body

@@ -1,4 +1,4 @@
-# Copyright 2015 Google Inc. All rights reserved.
+# Copyright 2015 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -47,24 +47,30 @@ class DatastoreCounterHandler(webapp2.RequestHandler):
     namespace is specified by the request, which is arbitrarily named 'default'
     if not specified."""
 
-    def get(self, namespace='default'):
-        global_count = update_counter('counter')
+    def get(self, namespace="default"):
+        global_count = update_counter("counter")
 
         # Save the current namespace.
         previous_namespace = namespace_manager.get_namespace()
         try:
             namespace_manager.set_namespace(namespace)
-            namespace_count = update_counter('counter')
+            namespace_count = update_counter("counter")
         finally:
             # Restore the saved namespace.
             namespace_manager.set_namespace(previous_namespace)
 
-        self.response.write('Global: {}, Namespace {}: {}'.format(
-            global_count, namespace, namespace_count))
+        self.response.write(
+            "Global: {}, Namespace {}: {}".format(
+                global_count, namespace, namespace_count
+            )
+        )
 
 
-app = webapp2.WSGIApplication([
-    (r'/datastore', DatastoreCounterHandler),
-    (r'/datastore/(.*)', DatastoreCounterHandler)
-], debug=True)
+app = webapp2.WSGIApplication(
+    [
+        (r"/datastore", DatastoreCounterHandler),
+        (r"/datastore/(.*)", DatastoreCounterHandler),
+    ],
+    debug=True,
+)
 # [END all]

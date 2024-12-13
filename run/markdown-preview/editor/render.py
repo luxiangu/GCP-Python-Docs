@@ -12,49 +12,38 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# [START run_secure_request]
+# [START cloudrun_secure_request]
 import os
-import sys
 import urllib
+
+import google.auth.transport.requests
+import google.oauth2.id_token
 
 
 def new_request(data):
-    """
-    new_request creates a new HTTP request with IAM ID Token credential.
-    This token is automatically handled by private Cloud Run (fully managed)
-    and Cloud Functions.
-    """
+    """Creates a new HTTP request with IAM ID Token credential.
 
+    This token is automatically handled by private Cloud Run and Cloud Functions.
+
+    Args:
+        data: data for the authenticated request
+
+    Returns:
+        The response from the HTTP request
+    """
     url = os.environ.get("EDITOR_UPSTREAM_RENDER_URL")
     if not url:
         raise Exception("EDITOR_UPSTREAM_RENDER_URL missing")
 
-    unauthenticated = os.environ.get("EDITOR_UPSTREAM_UNAUTHENTICATED", False)
-
     req = urllib.request.Request(url, data=data.encode())
+    auth_req = google.auth.transport.requests.Request()
+    target_audience = url
 
-    if not unauthenticated:
-        token = get_token(url)
-        req.add_header("Authorization", f"Bearer {token}")
-
-    sys.stdout.flush()
+    id_token = google.oauth2.id_token.fetch_id_token(auth_req, target_audience)
+    req.add_header("Authorization", f"Bearer {id_token}")
 
     response = urllib.request.urlopen(req)
     return response.read()
 
 
-def get_token(url):
-    """
-    Retrieves the IAM ID Token credential for the url.
-    """
-    token_url = (
-        f"http://metadata.google.internal/computeMetadata/v1/instance/"
-        f"service-accounts/default/identity?audience={url}"
-    )
-    token_req = urllib.request.Request(
-        token_url, headers={"Metadata-Flavor": "Google"}
-    )
-    token_response = urllib.request.urlopen(token_req)
-    token = token_response.read()
-    return token.decode()
-# [END run_secure_request]
+# [END cloudrun_secure_request]

@@ -70,28 +70,46 @@ test their code.
     of the versions you wish to test against.  A list of available versions
     is available on [python.org](https://www.python.org/doc/versions/)
 
-    As of January 8, 2020, the latest Python versions are:
+    As of April 28, 2022, the latest Python versions are:
 
-    *  2.7.17 (latest 2.7.x release)
+    *  3.6.13 (latest 3.6.x release)
     ```console
-    $ pyenv install 2.7.17
+    $ pyenv install 3.6.13
     ```
-    *  3.5.9 (latest 3.5.x release)
+    *  3.7.16 (latest 3.7.x release)
     ```console
-    $ pyenv install 3.5.9
+    $ pyenv install 3.7.16
     ```
-    *  3.6.10 (latest 3.6.x release)
+    *  3.8.16 (latest 3.8.x release)
     ```console
-    $ pyenv install 3.6.10
+    $ pyenv install 3.8.16
     ```
-    *  3.7.6 (latest 3.7.x release)
+    *  3.9.16 (latest 3.9.x release)
     ```console
-    $ pyenv install 3.7.6
+    $ pyenv install 3.9.16
     ```
-    *  3.8.1 (latest 3.8.x release)
+    *  3.10.9 (latest 3.10.x release)
     ```console
-    $ pyenv install 3.8.1
+    $ pyenv install 3.10.9
     ```
+    *  3.11.1 (latest 3.11.x release)
+    ```console
+    $ pyenv install 3.11.1
+    ```
+    
+    > ℹ️ *Note*: If you are using an M1 Mac,
+    > certain versions of Python will not properly install with pyenv
+    > due to [incompatibilities with `clang`](https://bugs.python.org/issue45405).
+    > Python 3.6.13, 3.7.13, and 3.8.13 will work, but earlier patches Python 3.6, Python 3.7, and Python 3.8 may not. 
+
+
+    > ℹ️ *Note*: If you are getting errors installing a python version,
+    > try setting up the `SDKROOT` environment variable.
+    >
+    > ```console
+    > # You can add this to your .bashrc file.
+    > export SDKROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
+    > ```
 
 1.  After you have installed a python version through pyenv,
     verify that you are now using the pyenv Python shim.
@@ -105,11 +123,11 @@ test their code.
 Pyenv allows you to configure the priority order for your python installs.
 
 ```
-pyenv global 3.8.1 3.7.6 3.6.10 3.5.9 2.7.17
+pyenv global 3.8.5 3.7.8 3.6.11 3.5.9 2.7.18
 ```
 
-This will make python and python3 point to Python 3.8.1. python2 will use
-2.7.17. You can also further specify versions, such as python3.6 to use that
+This will make python and python3 point to Python 3.8.5. python2 will use
+2.7.18. You can also further specify versions, such as python3.6 to use that
 version.
 
 ## Python virtual environments
@@ -145,10 +163,10 @@ created virtual environment. You can install this by running
     cd ~/src/python-docs-samples	
     ```	
 
-1.  Create a virtualenv for python 3.8.1 using `pyenv virtualenv`.	
+1.  Create a virtualenv for python 3.8.5 using `pyenv virtualenv`.	
 
     ```console	
-    pyenv virtualenv 3.8.1 python-docs-samples	
+    pyenv virtualenv 3.8.5 python-docs-samples	
     ```	
 
     This creates a virtualenv folder within `~/.pyenv/versions/`.	
@@ -157,14 +175,14 @@ created virtual environment. You can install this by running
 
     ```console	
     # pyenv local [name of virtualenv] [list of python versions to use]	
-    pyenv local python-docs-samples 3.8.1 3.7.6 3.6.10 3.5.9 2.7.17	
+    pyenv local python-docs-samples 3.8.5 3.7.8 3.6.11 3.5.9 2.7.18	
     ```	
 
 1.  Now, when you `cd` into the source directory or a subdirectory within it,	
     pyenv will make your virtualenv the default Python. Since you specified	
     more than one version, it will also add binaries like `python36` and	
     `python27` to your PATH, which
-    [nox](https://github.com/GoogleCloudPlatform/python-docs-samples/blob/master/AUTHORING_GUIDE.md#using-nox)
+    [nox](https://github.com/GoogleCloudPlatform/python-docs-samples/blob/main/AUTHORING_GUIDE.md#running-tests-with-nox)
     uses when picking Python interpreters.	
 
 1.  Add `.python-version` to your
@@ -173,4 +191,4 @@ created virtual environment. You can install this by running
 
 ## More on authoring samples
 If you are looking for more information on how to author samples, please view
-the [Authoring Guide](https://github.com/GoogleCloudPlatform/python-docs-samples/blob/master/AUTHORING_GUIDE.md)
+the [Authoring Guide](https://github.com/GoogleCloudPlatform/python-docs-samples/blob/main/AUTHORING_GUIDE.md)

@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc. All rights reserved.
+# Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import webtest
 
 import main
 
-PROJECT = os.environ['GCLOUD_PROJECT']
+PROJECT = os.environ["GOOGLE_CLOUD_PROJECT"]
 
 
 @pytest.fixture
@@ -31,27 +31,27 @@ def app(testbed):
 
 @patch("main.background_thread")
 def test_background(thread, app):
-    app.get('/dog')
-    response = app.get('/')
+    app.get("/dog")
+    response = app.get("/")
     assert response.status_int == 200
-    assert response.body == 'Dog'
-    app.get('/cat')
+    assert response.body == "Dog"
+    app.get("/cat")
     # no stub for system so manually set
-    main.val = 'Cat'
-    response = app.get('/')
+    main.val = "Cat"
+    response = app.get("/")
     assert response.status_int == 200
-    assert response.body == 'Cat'
+    assert response.body == "Cat"
 
 
 @patch("main.background_thread")
 def test_background_auto_start(thread, app):
-    app.get('/dog')
-    response = app.get('/')
+    app.get("/dog")
+    response = app.get("/")
     assert response.status_int == 200
-    assert response.body == 'Dog'
-    app.get('/cat?auto=True')
+    assert response.body == "Dog"
+    app.get("/cat?auto=True")
     # no stub for system so manually set
-    main.val = 'Cat'
-    response = app.get('/')
+    main.val = "Cat"
+    response = app.get("/")
     assert response.status_int == 200
-    assert response.body == 'Cat'
+    assert response.body == "Cat"

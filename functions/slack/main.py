@@ -1,4 +1,4 @@
-# Copyright 2018, Google, LLC.
+# Copyright 2018 Google LLC.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -12,79 +12,76 @@
 # limitations under the License.
 
 # [START functions_slack_setup]
-import hashlib
-import hmac
 import os
 
 from flask import jsonify
+import functions_framework
 import googleapiclient.discovery
+from slack.signature import SignatureVerifier
 
 
 kgsearch = googleapiclient.discovery.build(
-    'kgsearch',
-    'v1',
-    developerKey=os.environ['KG_API_KEY'],
-    cache_discovery=False)
+    "kgsearch", "v1", developerKey=os.environ["KG_API_KEY"], cache_discovery=False
+)
 # [END functions_slack_setup]
 
 
 # [START functions_verify_webhook]
-# Python 3+ version of https://github.com/slackapi/python-slack-events-api/blob/master/slackeventsapi/server.py
 def verify_signature(request):
-    timestamp = request.headers.get('X-Slack-Request-Timestamp', '')
-    signature = request.headers.get('X-Slack-Signature', '')
+    request.get_data()  # Decodes received requests into request.data
 
-    req = str.encode('v0:{}:'.format(timestamp)) + request.get_data()
-    request_digest = hmac.new(
-        str.encode(os.environ['SLACK_SECRET']),
-        req, hashlib.sha256
-    ).hexdigest()
-    request_hash = 'v0={}'.format(request_digest)
+    verifier = SignatureVerifier(os.environ["SLACK_SECRET"])
 
-    if not hmac.compare_digest(request_hash, signature):
-        raise ValueError('Invalid request/credentials.')
+    if not verifier.is_valid_request(request.data, request.headers):
+        raise ValueError("Invalid request/credentials.")
+
+
 # [END functions_verify_webhook]
 
 
 # [START functions_slack_format]
 def format_slack_message(query, response):
     entity = None
-    if response and response.get('itemListElement') is not None and \
-       len(response['itemListElement']) > 0:
-        entity = response['itemListElement'][0]['result']
+    if (
+        response
+        and response.get("itemListElement") is not None
+        and len(response["itemListElement"]) > 0
+    ):
+        entity = response["itemListElement"][0]["result"]
 
     message = {
-        'response_type': 'in_channel',
-        'text': 'Query: {}'.format(query),
-        'attachments': []
+        "response_type": "in_channel",
+        "text": f"Query: {query}",
+        "attachments": [],
     }
 
     attachment = {}
     if entity:
-        name = entity.get('name', '')
-        description = entity.get('description', '')
-        detailed_desc = entity.get('detailedDescription', {})
-        url = detailed_desc.get('url')
-        article = detailed_desc.get('articleBody')
-        image_url = entity.get('image', {}).get('contentUrl')
+        name = entity.get("name", "")
+        description = entity.get("description", "")
+        detailed_desc = entity.get("detailedDescription", {})
+        url = detailed_desc.get("url")
+        article = detailed_desc.get("articleBody")
+        image_url = entity.get("image", {}).get("contentUrl")
 
-        attachment['color'] = '#3367d6'
+        attachment["color"] = "#3367d6"
         if name and description:
-            attachment['title'] = '{}: {}'.format(entity["name"],
-                                                  entity["description"])
+            attachment["title"] = "{}: {}".format(entity["name"], entity["description"])
         elif name:
-            attachment['title'] = name
+            attachment["title"] = name
         if url:
-            attachment['title_link'] = url
+            attachment["title_link"] = url
         if article:
-            attachment['text'] = article
+            attachment["text"] = article
         if image_url:
-            attachment['image_url'] = image_url
+            attachment["image_url"] = image_url
     else:
-        attachment['text'] = 'No results match your query.'
-    message['attachments'].append(attachment)
+        attachment["text"] = "No results match your query."
+    message["attachments"].append(attachment)
 
     return message
+
+
 # [END functions_slack_format]
 
 
@@ -93,15 +90,20 @@ def make_search_request(query):
     req = kgsearch.entities().search(query=query, limit=1)
     res = req.execute()
     return format_slack_message(query, res)
+
+
 # [END functions_slack_request]
 
 
 # [START functions_slack_search]
+@functions_framework.http
 def kg_search(request):
-    if request.method != 'POST':
-        return 'Only POST requests are accepted', 405
+    if request.method != "POST":
+        return "Only POST requests are accepted", 405
 
     verify_signature(request)
-    kg_search_response = make_search_request(request.form['text'])
+    kg_search_response = make_search_request(request.form["text"])
     return jsonify(kg_search_response)
+
+
 # [END functions_slack_search]

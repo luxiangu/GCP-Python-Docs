@@ -1,4 +1,4 @@
-# Copyright 2015, Google, Inc.
+# Copyright 2015 Google LLC
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -18,7 +18,7 @@ with path '/service' consumes 1 core-second of CPU time, with the timeout of
 Google Compute Engine Autoscaler can scale a web frontend server based on CPU
 utilization.
 The original version of this file is available here:
-https://github.com/GoogleCloudPlatform/python-docs-samples/blob/master/compute/
+https://github.com/GoogleCloudPlatform/python-docs-samples/blob/main/compute/
     autoscaler/demo/tests/test_frontend.py
 """
 
@@ -57,11 +57,9 @@ class CpuBurner(object):
         """
         start_walltime_sec = self.get_walltime()
         start_cputime_sec = self.get_user_cputime()
-        while (self.get_user_cputime() <
-               start_cputime_sec + REQUEST_CPUTIME_SEC):
+        while self.get_user_cputime() < start_cputime_sec + REQUEST_CPUTIME_SEC:
             self.busy_wait()
-            if (self.get_walltime() >
-                    start_walltime_sec + REQUEST_TIMEOUT_SEC):
+            if self.get_walltime() > start_walltime_sec + REQUEST_TIMEOUT_SEC:
                 sys.exit(1)
 
     def handle_http_request(self):
@@ -77,8 +75,7 @@ class CpuBurner(object):
             return (500, "Request failed\n")
         else:
             end_time = self.get_walltime()
-            response = "Request took %.2f walltime seconds\n" % (
-                end_time - start_time)
+            response = "Request took %.2f walltime seconds\n" % (end_time - start_time)
             return (200, response)
 
 
@@ -102,8 +99,7 @@ class DemoRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         self.wfile.close()
 
 
-class DemoHttpServer(SocketServer.ThreadingMixIn,
-                     BaseHTTPServer.HTTPServer):
+class DemoHttpServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
     pass
 
 

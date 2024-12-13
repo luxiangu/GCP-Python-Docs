@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc. All rights reserved.
+# Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,12 +24,12 @@ def app(testbed):
 
 
 def test_get(app):
-    app.get('/')
+    app.get("/")
 
 
 def test_read(app):
-    app.get('/read')
+    app.get("/read")
 
 
 def test_delete(app):
-    app.get('/delete')
+    app.get("/delete")

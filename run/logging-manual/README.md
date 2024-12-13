@@ -37,11 +37,11 @@ export GOOGLE_CLOUD_PROJECT=<PROJECT_ID>
 gcloud builds submit --tag gcr.io/${GOOGLE_CLOUD_PROJECT}/logging-manual
 
 # Deploy to Cloud Run
-gcloud beta run deploy logging-manual \
+gcloud run deploy logging-manual \
 --image gcr.io/${GOOGLE_CLOUD_PROJECT}/logging-manual \
 --set-env-vars GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT}
 ```
 
 Read more about Cloud Run logging in the [Logging How-to Guide](http://cloud.google.com/run/docs/logging).
 
-For more details on how to work with this sample read the [Python Cloud Run Samples README](https://github.com/GoogleCloudPlatform/python-docs-samples/tree/master/run)
+For more details on how to work with this sample read the [Python Cloud Run Samples README](https://github.com/GoogleCloudPlatform/python-docs-samples/tree/main/run)

@@ -1,4 +1,4 @@
-# Copyright 2015 Google Inc. All Rights Reserved.
+# Copyright 2015 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,5 +19,5 @@ def test_index():
     main.app.testing = True
     client = main.app.test_client()
 
-    r = client.get('/')
+    r = client.get("/")
     assert r.status_code == 200

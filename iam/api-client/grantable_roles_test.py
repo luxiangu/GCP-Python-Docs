@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc. All Rights Reserved.
+# Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,12 +14,14 @@
 
 import os
 
+import pytest
+
 import grantable_roles
 
 
-def test_service_accounts(capsys):
-    project = os.environ['GCLOUD_PROJECT']
-    resource = '//cloudresourcemanager.googleapis.com/projects/' + project
+def test_grantable_roles(capsys: pytest.CaptureFixture) -> None:
+    project = os.environ["GOOGLE_CLOUD_PROJECT"]
+    resource = "//cloudresourcemanager.googleapis.com/projects/" + project
     grantable_roles.view_grantable_roles(resource)
     out, _ = capsys.readouterr()
-    assert 'Title:' in out
+    assert "Title:" in out

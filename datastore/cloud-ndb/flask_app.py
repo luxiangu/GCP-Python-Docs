@@ -1,4 +1,4 @@
-# Copyright 2019 Google LLC All Rights Reserved.
+# Copyright 2019 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -37,8 +37,10 @@ class Book(ndb.Model):
     title = ndb.StringProperty()
 
 
-@app.route('/')
+@app.route("/")
 def list_books():
     books = Book.query()
     return str([book.to_dict() for book in books])
+
+
 # [END ndb_flask]

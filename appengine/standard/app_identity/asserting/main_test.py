@@ -1,4 +1,4 @@
-# Copyright 2015 Google Inc. All rights reserved.
+# Copyright 2015 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,12 +21,12 @@ import main
 def test_app(testbed):
     app = webtest.TestApp(main.app)
 
-    with mock.patch('main.urlfetch.fetch') as fetch_mock:
+    with mock.patch("main.urlfetch.fetch") as fetch_mock:
         result_mock = mock.Mock()
         result_mock.status_code = 200
-        result_mock.content = '{}'
+        result_mock.content = "{}"
         fetch_mock.return_value = result_mock
 
-        response = app.get('/')
+        response = app.get("/")
         assert response.status_int == 200
         assert fetch_mock.called

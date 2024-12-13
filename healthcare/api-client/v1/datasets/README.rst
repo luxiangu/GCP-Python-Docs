@@ -4,7 +4,7 @@ Cloud Healthcare API Python Samples
 ===============================================================================
 
 .. image:: https://gstatic.com/cloudssh/images/open-btn.png
-   :target: https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/GoogleCloudPlatform/python-docs-samples&page=editor&open_in_editor=healthcare/api-client/datasets/README.rst
+   :target: https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/GoogleCloudPlatform/python-docs-samples&page=editor&open_in_editor=healthcare/api-client/v1/datasets/README.rst
 
 
 This directory contains samples for Cloud Healthcare API. `Cloud Healthcare API`_ implements healthcare-native protocols and formats to accelerate ingestion, storage, analysis, and integration of healthcare data with cloud-based applications.
@@ -16,6 +16,13 @@ This directory contains samples for Cloud Healthcare API. `Cloud Healthcare API`
 
 
 .. _Cloud Healthcare API: https://cloud.google.com/healthcare/docs
+
+To run the sample, you need to enable the API at: https://console.cloud.google.com/apis/library/healthcare.googleapis.com
+
+To run the sample, you need to have `Healthcare Dataset Administrator` role.
+
+
+
 
 Setup
 -------------------------------------------------------------------------------
@@ -61,93 +68,6 @@ Install Dependencies
 .. _pip: https://pip.pypa.io/
 .. _virtualenv: https://virtualenv.pypa.io/
 
-Samples
--------------------------------------------------------------------------------
-
-Datasets
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-.. image:: https://gstatic.com/cloudssh/images/open-btn.png
-   :target: https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/GoogleCloudPlatform/python-docs-samples&page=editor&open_in_editor=healthcare/api-client/datasets/datasets.py,healthcare/api-client/datasets/README.rst
-
-
-
-
-To run this sample:
-
-.. code-block:: bash
-
-    $ python datasets.py
-
-    usage: datasets.py [-h] [--project_id PROJECT_ID]
-                       [--cloud_region CLOUD_REGION]
-                       [--dataset_id DATASET_ID] [--time_zone TIME_ZONE]
-                       [--destination_dataset_id DESTINATION_DATASET_ID]
-                       [--keeplist_tags KEEPLIST_TAGS] [--member MEMBER]
-                       [--role ROLE]
-                       {create-dataset,delete-dataset,get-dataset,list-datasets,patch-dataset,get_iam_policy,set_iam_policy,deidentify-dataset}
-                       ...
-
-    positional arguments:
-      {create-dataset,delete-dataset,get-dataset,list-datasets,patch-dataset,get_iam_policy,set_iam_policy,deidentify-dataset}
-        create-dataset      Creates a dataset.
-        delete-dataset      Deletes a dataset.
-        get-dataset         Gets any metadata associated with a dataset.
-        list-datasets       Lists the datasets in the project.
-        patch-dataset       Updates dataset metadata.
-        get_iam_policy      Gets the IAM policy for the specified dataset.
-        set_iam_policy      Sets the IAM policy for the specified dataset. A
-                            single member will be assigned a single role. A member
-                            can be any of: - allUsers, that is, anyone -
-                            allAuthenticatedUsers, anyone authenticated with a
-                            Google account - user:email, as in
-                            'user:somebody@example.com' - group:email, as in
-                            'group:admins@example.com' - domain:domainname, as in
-                            'domain:example.com' - serviceAccount:email, as in
-                            'serviceAccount:my-other-
-                            app@appspot.gserviceaccount.com' A role can be any IAM
-                            role, such as 'roles/viewer', 'roles/owner', or
-                            'roles/editor'
-        deidentify-dataset  Creates a new dataset containing de-identified data
-                            from the source dataset.
-
-    optional arguments:
-      -h, --help            show this help message and exit
-      --project_id PROJECT_ID
-                            GCP project name
-      --cloud_region CLOUD_REGION
-                            GCP cloud region
-      --dataset_id DATASET_ID
-                            Name of dataset
-      --time_zone TIME_ZONE
-                            The default timezone used by a dataset
-      --destination_dataset_id DESTINATION_DATASET_ID
-                            The name of the new dataset where the de-identified
-                            data will be written
-      --keeplist_tags KEEPLIST_TAGS
-                            The data to keeplist, for example "PatientID" or
-                            "StudyInstanceUID"
-      --member MEMBER       Member to add to IAM policy (e.g.
-                            "domain:example.com")
-      --role ROLE           IAM Role to give to member (e.g. "roles/viewer")
-
-
-
-
-
-The client library
--------------------------------------------------------------------------------
-
-This sample uses the `Google Cloud Client Library for Python`_.
-You can read the documentation for more details on API usage and use GitHub
-to `browse the source`_ and  `report issues`_.
-
-.. _Google Cloud Client Library for Python:
-    https://googlecloudplatform.github.io/google-cloud-python/
-.. _browse the source:
-    https://github.com/GoogleCloudPlatform/google-cloud-python
-.. _report issues:
-    https://github.com/GoogleCloudPlatform/google-cloud-python/issues
 
 
 .. _Google Cloud SDK: https://cloud.google.com/sdk/

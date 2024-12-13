@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc. All rights reserved.
+# Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,6 +24,6 @@ def app():
 
 
 def test_get_module_info(app):
-    result = app.get('/')
+    result = app.get("/")
     assert result.status_code == 200
-    assert 'hello world' in result.body
+    assert "hello world" in result.body

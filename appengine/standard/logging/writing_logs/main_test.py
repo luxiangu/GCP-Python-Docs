@@ -1,4 +1,4 @@
-# Copyright 2015 Google Inc. All rights reserved.
+# Copyright 2015 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,6 +19,6 @@ import main
 
 def test_app(testbed):
     app = webtest.TestApp(main.app)
-    response = app.get('/')
+    response = app.get("/")
     assert response.status_int == 200
-    assert 'Logging example' in response.text
+    assert "Logging example" in response.text

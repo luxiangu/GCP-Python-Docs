@@ -1,4 +1,4 @@
-# Copyright 2019 Google LLC All Rights Reserved.
+# Copyright 2019 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -42,9 +42,10 @@ def test_index(test_book):
 
     @backoff.on_exception(backoff.expo, AssertionError, max_time=60)
     def eventually_consistent_test():
-        r = client.get('/')
-        assert r.status_code == 200
-        assert test_book.title in r.data.decode('utf-8')
+        r = client.get("/")
+        with flask_app.client.context():
+            assert r.status_code == 200
+            assert test_book.title in r.data.decode("utf-8")
 
     eventually_consistent_test()
 

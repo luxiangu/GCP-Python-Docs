@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc. All rights reserved.
+# Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,15 +20,15 @@ import main
 def test_create_and_read(testbed, login):
     app = webtest.TestApp(main.app)
 
-    response = app.get('/blobstore/read')
+    response = app.get("/blobstore/read")
 
-    assert 'abcde' in response
+    assert "abcde" in response
 
 
 def test_create_and_serve(testbed, login):
     app = webtest.TestApp(main.app)
 
-    response = app.get('/blobstore/serve')
-    served_file_header = response.headers['X-AppEngine-BlobKey']
+    response = app.get("/blobstore/serve")
+    served_file_header = response.headers["X-AppEngine-BlobKey"]
 
-    assert 'encoded_gs_file' in served_file_header
+    assert "encoded_gs_file" in served_file_header

@@ -1,4 +1,4 @@
-# Copyright 2019 Google LLC All Rights Reserved.
+# Copyright 2019 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ def test_ndb_django_middleware():
         # ndb.exceptions.ContextError if no context is set up.
         ndb.context.get_context()
 
-    wrapped_function = django_middleware.ndb_django_middleware(
-        fake_get_response)
+    wrapped_function = django_middleware.ndb_django_middleware(fake_get_response)
 
     wrapped_function(None)

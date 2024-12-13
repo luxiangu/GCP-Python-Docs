@@ -1,4 +1,4 @@
-# Copyright 2018 Google LLC. All Rights Reserved.
+# Copyright 2018 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,12 +17,12 @@ import batch_operation_sample
 
 
 def test_batch_operation_sample(capsys):
-
     batch_operation_sample.run_sample()
     out, _ = capsys.readouterr()
     expected = (
-        '.*Company generated:.*Company created:.*.*Job created:.*Job '
-        'created:.*.*Job updated:.*Engineer in Mountain View.*Job '
-        'updated:.*Engineer in Mountain View.*.*Job deleted.*Job '
-        'deleted.*.*Company deleted.*')
+        ".*Company generated:.*Company created:.*.*Job created:.*Job "
+        "created:.*.*Job updated:.*Engineer in Mountain View.*Job "
+        "updated:.*Engineer in Mountain View.*.*Job deleted.*Job "
+        "deleted.*.*Company deleted.*"
+    )
     assert re.search(expected, out, re.DOTALL)

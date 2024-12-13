@@ -1,4 +1,4 @@
-# Copyright 2018 Google LLC All Rights Reserved.
+# Copyright 2018 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,16 +23,17 @@ import pytest
 
 # Add datasets for bootstrapping datasets for testing
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "datasets"))  # noqa
-import datasets  # noqa
+from create_dataset import create_dataset  # noqa
+from delete_dataset import delete_dataset  # noqa
 import dicom_stores  # noqa
 
 
-cloud_region = "us-central1"
+location = "us-central1"
 project_id = os.environ["GOOGLE_CLOUD_PROJECT"]
 
-dataset_id = "test_dataset-{}".format(uuid.uuid4())
-dicom_store_id = "test_dicom_store_{}".format(uuid.uuid4())
-pubsub_topic = "test_pubsub_topic_{}".format(uuid.uuid4())
+dataset_id = f"test_dataset-{uuid.uuid4()}"
+dicom_store_id = f"test_dicom_store_{uuid.uuid4()}"
+pubsub_topic = f"test_pubsub_topic_{uuid.uuid4()}"
 
 RESOURCES = os.path.join(os.path.dirname(__file__), "resources")
 bucket = os.environ["CLOUD_STORAGE_BUCKET"]
@@ -46,13 +47,13 @@ def test_dataset():
     @backoff.on_exception(backoff.expo, HttpError, max_time=60)
     def create():
         try:
-            datasets.create_dataset(project_id, cloud_region, dataset_id)
+            create_dataset(project_id, location, dataset_id)
         except HttpError as err:
             # We ignore 409 conflict here, because we know it's most
             # likely the first request failed on the client side, but
             # the creation suceeded on the server side.
             if err.resp.status == 409:
-                print("Got exception {} while creating dataset".format(err.resp.status))
+                print(f"Got exception {err.resp.status} while creating dataset")
             else:
                 raise
 
@@ -64,11 +65,11 @@ def test_dataset():
     @backoff.on_exception(backoff.expo, HttpError, max_time=60)
     def clean_up():
         try:
-            datasets.delete_dataset(project_id, cloud_region, dataset_id)
+            delete_dataset(project_id, location, dataset_id)
         except HttpError as err:
             # The API returns 403 when the dataset doesn't exist.
             if err.resp.status == 403:
-                print("Got exception {} while deleting dataset".format(err.resp.status))
+                print(f"Got exception {err.resp.status} while deleting dataset")
             else:
                 raise
 
@@ -81,7 +82,7 @@ def test_dicom_store():
     def create():
         try:
             dicom_stores.create_dicom_store(
-                project_id, cloud_region, dataset_id, dicom_store_id
+                project_id, location, dataset_id, dicom_store_id
             )
         except HttpError as err:
             # We ignore 409 conflict here, because we know it's most
@@ -105,7 +106,7 @@ def test_dicom_store():
     def clean_up():
         try:
             dicom_stores.delete_dicom_store(
-                project_id, cloud_region, dataset_id, dicom_store_id
+                project_id, location, dataset_id, dicom_store_id
             )
         except HttpError as err:
             # The API returns 404 when the DICOM store doesn't exist.
@@ -133,7 +134,7 @@ def crud_dicom_store_id():
     def clean_up():
         try:
             dicom_stores.delete_dicom_store(
-                project_id, cloud_region, dataset_id, dicom_store_id
+                project_id, location, dataset_id, dicom_store_id
             )
         except HttpError as err:
             # The API returns 404 when the DICOM store doesn't exist.
@@ -152,32 +153,34 @@ def crud_dicom_store_id():
     clean_up()
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def test_pubsub_topic():
     pubsub_client = pubsub_v1.PublisherClient()
     # Create the Pub/Sub topic
     topic_path = pubsub_client.topic_path(project_id, pubsub_topic)
-    pubsub_client.create_topic(topic_path)
+    pubsub_client.create_topic(request={"name": topic_path})
 
     yield pubsub_topic
 
     # Delete the Pub/Sub topic
-    pubsub_client.delete_topic(topic_path)
+    pubsub_client.delete_topic(request={"topic": topic_path})
 
 
 def test_CRUD_dicom_store(test_dataset, crud_dicom_store_id, capsys):
-    dicom_stores.create_dicom_store(
-        project_id, cloud_region, dataset_id, crud_dicom_store_id
-    )
+    @backoff.on_exception(backoff.expo, HttpError, max_time=60)
+    def create():
+        dicom_stores.create_dicom_store(
+            project_id, location, dataset_id, crud_dicom_store_id
+        )
 
-    dicom_stores.get_dicom_store(
-        project_id, cloud_region, dataset_id, crud_dicom_store_id
-    )
+    create()
 
-    dicom_stores.list_dicom_stores(project_id, cloud_region, dataset_id)
+    dicom_stores.get_dicom_store(project_id, location, dataset_id, crud_dicom_store_id)
+
+    dicom_stores.list_dicom_stores(project_id, location, dataset_id)
 
     dicom_stores.delete_dicom_store(
-        project_id, cloud_region, dataset_id, crud_dicom_store_id
+        project_id, location, dataset_id, crud_dicom_store_id
     )
 
     out, _ = capsys.readouterr()
@@ -189,10 +192,9 @@ def test_CRUD_dicom_store(test_dataset, crud_dicom_store_id, capsys):
     assert "Deleted DICOM store" in out
 
 
-def test_patch_dicom_store(
-        test_dataset, test_dicom_store, test_pubsub_topic, capsys):
+def test_patch_dicom_store(test_dataset, test_dicom_store, test_pubsub_topic, capsys):
     dicom_stores.patch_dicom_store(
-        project_id, cloud_region, dataset_id, dicom_store_id, test_pubsub_topic
+        project_id, location, dataset_id, dicom_store_id, test_pubsub_topic
     )
 
     out, _ = capsys.readouterr()
@@ -202,7 +204,7 @@ def test_patch_dicom_store(
 
 def test_import_dicom_instance(test_dataset, test_dicom_store, capsys):
     dicom_stores.import_dicom_instance(
-        project_id, cloud_region, dataset_id, dicom_store_id, content_uri
+        project_id, location, dataset_id, dicom_store_id, content_uri
     )
 
     out, _ = capsys.readouterr()
@@ -212,7 +214,7 @@ def test_import_dicom_instance(test_dataset, test_dicom_store, capsys):
 
 def test_export_dicom_instance(test_dataset, test_dicom_store, capsys):
     dicom_stores.export_dicom_instance(
-        project_id, cloud_region, dataset_id, dicom_store_id, bucket
+        project_id, location, dataset_id, dicom_store_id, bucket
     )
 
     out, _ = capsys.readouterr()
@@ -222,12 +224,12 @@ def test_export_dicom_instance(test_dataset, test_dicom_store, capsys):
 
 def test_get_set_dicom_store_iam_policy(test_dataset, test_dicom_store, capsys):
     get_response = dicom_stores.get_dicom_store_iam_policy(
-        project_id, cloud_region, dataset_id, dicom_store_id
+        project_id, location, dataset_id, dicom_store_id
     )
 
     set_response = dicom_stores.set_dicom_store_iam_policy(
         project_id,
-        cloud_region,
+        location,
         dataset_id,
         dicom_store_id,
         "serviceAccount:python-docs-samples-tests@appspot.gserviceaccount.com",

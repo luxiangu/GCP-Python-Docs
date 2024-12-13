@@ -1,4 +1,4 @@
-# Copyright 2018 Google LLC All Rights Reserved.
+# Copyright 2018 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,43 +16,50 @@ import argparse
 import json
 import os
 
-from google.auth.transport import requests
-from google.oauth2 import service_account
-
-_BASE_URL = "https://healthcare.googleapis.com/v1"
-
-
-def get_session():
-    """Creates an authorized Requests Session."""
-    credentials = service_account.Credentials.from_service_account_file(
-        filename=os.environ["GOOGLE_APPLICATION_CREDENTIALS"],
-        scopes=["https://www.googleapis.com/auth/cloud-platform"],
-    )
-
-    # Create a requests Session object with the credentials.
-    session = requests.AuthorizedSession(credentials)
-    return session
-
 
 # [START healthcare_dicomweb_store_instance]
-def dicomweb_store_instance(
-    base_url, project_id, cloud_region, dataset_id, dicom_store_id, dcm_file
-):
-    """Handles the POST requests specified in the DICOMweb standard."""
-    url = "{}/projects/{}/locations/{}".format(base_url, project_id, cloud_region)
+def dicomweb_store_instance(project_id, location, dataset_id, dicom_store_id, dcm_file):
+    """Handles the POST requests specified in the DICOMweb standard.
+
+    See https://github.com/GoogleCloudPlatform/python-docs-samples/tree/main/healthcare/api-client/v1/dicom
+    before running the sample."""
+
+    # Imports the google.auth.transport.requests transport
+    from google.auth.transport import requests
+
+    # Imports a module to allow authentication using Application Default Credentials (ADC)
+    import google.auth
+
+    # Gets credentials from the environment. google.auth.default() returns credentials and the
+    # associated project ID, but in this sample, the project ID is passed in manually.
+    credentials, _ = google.auth.default()
+
+    scoped_credentials = credentials.with_scopes(
+        ["https://www.googleapis.com/auth/cloud-platform"]
+    )
+    # Creates a requests Session object with the credentials.
+    session = requests.AuthorizedSession(scoped_credentials)
+
+    # URL to the Cloud Healthcare API endpoint and version
+    base_url = "https://healthcare.googleapis.com/v1"
+
+    # TODO(developer): Uncomment these lines and replace with your values.
+    # project_id = 'my-project'  # replace with your GCP project ID
+    # location = 'us-central1'  # replace with the parent dataset's location
+    # dataset_id = 'my-dataset'  # replace with the parent dataset's ID
+    # dicom_store_id = 'my-dicom-store' # replace with the DICOM store ID
+    # dcm_file = 'dicom000_0001.dcm'  # replace with a DICOM file
+    url = f"{base_url}/projects/{project_id}/locations/{location}"
 
     dicomweb_path = "{}/datasets/{}/dicomStores/{}/dicomWeb/studies".format(
         url, dataset_id, dicom_store_id
     )
 
-    # Make an authenticated API request
-    session = get_session()
-
     with open(dcm_file, "rb") as dcm:
         dcm_content = dcm.read()
 
-    content_type = "application/dicom"
-    headers = {"Content-Type": content_type}
+    # Sets required "application/dicom" header on the request
+    headers = {"Content-Type": "application/dicom"}
 
     response = session.post(dicomweb_path, data=dcm_content, headers=headers)
     response.raise_for_status()
@@ -65,19 +72,43 @@ def dicomweb_store_instance(
 
 
 # [START healthcare_dicomweb_search_instances]
-def dicomweb_search_instance(
-    base_url, project_id, cloud_region, dataset_id, dicom_store_id
-):
-    """Handles the GET requests specified in DICOMweb standard."""
-    url = "{}/projects/{}/locations/{}".format(base_url, project_id, cloud_region)
+def dicomweb_search_instance(project_id, location, dataset_id, dicom_store_id):
+    """Handles the GET requests specified in DICOMweb standard.
+
+    See https://github.com/GoogleCloudPlatform/python-docs-samples/tree/main/healthcare/api-client/v1/dicom
+    before running the sample."""
+
+    # Imports the google.auth.transport.requests transport
+    from google.auth.transport import requests
+
+    # Imports a module to allow authentication using Application Default Credentials (ADC)
+    import google.auth
+
+    # Gets credentials from the environment. google.auth.default() returns credentials and the
+    # associated project ID, but in this sample, the project ID is passed in manually.
+    credentials, _ = google.auth.default()
+
+    scoped_credentials = credentials.with_scopes(
+        ["https://www.googleapis.com/auth/cloud-platform"]
+    )
+    # Creates a requests Session object with the credentials.
+    session = requests.AuthorizedSession(scoped_credentials)
+
+    # URL to the Cloud Healthcare API endpoint and version
+    base_url = "https://healthcare.googleapis.com/v1"
+
+    # TODO(developer): Uncomment these lines and replace with your values.
+    # project_id = 'my-project'  # replace with your GCP project ID
+    # location = 'us-central1'  # replace with the parent dataset's location
+    # dataset_id = 'my-dataset'  # replace with the parent dataset's ID
+    # dicom_store_id = 'my-dicom-store' # replace with the DICOM store ID
+    url = f"{base_url}/projects/{project_id}/locations/{location}"
 
     dicomweb_path = "{}/datasets/{}/dicomStores/{}/dicomWeb/instances".format(
         url, dataset_id, dicom_store_id
     )
 
-    # Make an authenticated API request
-    session = get_session()
-
+    # Sets required application/dicom+json; charset=utf-8 header on the request
     headers = {"Content-Type": "application/dicom+json; charset=utf-8"}
 
     response = session.get(dicomweb_path, headers=headers)
@@ -96,10 +127,39 @@ def dicomweb_search_instance(
 
 # [START healthcare_dicomweb_retrieve_study]
 def dicomweb_retrieve_study(
-    base_url, project_id, cloud_region, dataset_id, dicom_store_id, study_uid
+    project_id, location, dataset_id, dicom_store_id, study_uid
 ):
-    """Handles the GET requests specified in the DICOMweb standard."""
-    url = "{}/projects/{}/locations/{}".format(base_url, project_id, cloud_region)
+    """Handles the GET requests specified in the DICOMweb standard.
+
+    See https://github.com/GoogleCloudPlatform/python-docs-samples/tree/main/healthcare/api-client/v1/dicom
+    before running the sample."""
+
+    # Imports the google.auth.transport.requests transport
+    from google.auth.transport import requests
+
+    # Imports a module to allow authentication using Application Default Credentials (ADC)
+    import google.auth
+
+    # Gets credentials from the environment. google.auth.default() returns credentials and the
+    # associated project ID, but in this sample, the project ID is passed in manually.
+    credentials, _ = google.auth.default()
+
+    scoped_credentials = credentials.with_scopes(
+        ["https://www.googleapis.com/auth/cloud-platform"]
+    )
+    # Creates a requests Session object with the credentials.
+    session = requests.AuthorizedSession(scoped_credentials)
+
+    # URL to the Cloud Healthcare API endpoint and version
+    base_url = "https://healthcare.googleapis.com/v1"
+
+    # TODO(developer): Uncomment these lines and replace with your values.
+    # project_id = 'my-project'  # replace with your GCP project ID
+    # location = 'us-central1'  # replace with the parent dataset's location
+    # dataset_id = 'my-dataset'  # replace with the parent dataset's ID
+    # dicom_store_id = 'my-dicom-store' # replace with the DICOM store ID
+    # study_uid = '1.3.6.1.4.1.5062.55.1.227'  # replace with the study UID
+    url = f"{base_url}/projects/{project_id}/locations/{location}"
 
     dicomweb_path = "{}/datasets/{}/dicomStores/{}/dicomWeb/studies/{}".format(
         url, dataset_id, dicom_store_id, study_uid
@@ -110,16 +170,13 @@ def dicomweb_retrieve_study(
     # DICOM file.
     file_name = "study.multipart"
 
-    # Make an authenticated API request
-    session = get_session()
-
     response = session.get(dicomweb_path)
 
     response.raise_for_status()
 
     with open(file_name, "wb") as f:
         f.write(response.content)
-        print("Retrieved study and saved to {} in current directory".format(file_name))
+        print(f"Retrieved study and saved to {file_name} in current directory")
 
     return response
 
@@ -128,11 +185,37 @@ def dicomweb_retrieve_study(
 
 
 # [START healthcare_dicomweb_search_studies]
-def dicomweb_search_studies(
-    base_url, project_id, cloud_region, dataset_id, dicom_store_id
-):
-    """Handles the GET requests specified in the DICOMweb standard."""
-    url = "{}/projects/{}/locations/{}".format(base_url, project_id, cloud_region)
+def dicomweb_search_studies(project_id, location, dataset_id, dicom_store_id):
+    """Handles the GET requests specified in the DICOMweb standard.
+
+    See https://github.com/GoogleCloudPlatform/python-docs-samples/tree/main/healthcare/api-client/v1/dicom
+    before running the sample."""
+
+    # Imports the google.auth.transport.requests transport
+    from google.auth.transport import requests
+
+    # Imports a module to allow authentication using Application Default Credentials (ADC)
+    import google.auth
+
+    # Gets credentials from the environment. google.auth.default() returns credentials and the
+    # associated project ID, but in this sample, the project ID is passed in manually.
+    credentials, _ = google.auth.default()
+
+    scoped_credentials = credentials.with_scopes(
+        ["https://www.googleapis.com/auth/cloud-platform"]
+    )
+    # Creates a requests Session object with the credentials.
+    session = requests.AuthorizedSession(scoped_credentials)
+
+    # URL to the Cloud Healthcare API endpoint and version
+    base_url = "https://healthcare.googleapis.com/v1"
+
+    # TODO(developer): Uncomment these lines and replace with your values.
+    # project_id = 'my-project'  # replace with your GCP project ID
+    # location = 'us-central1'  # replace with the parent dataset's location
+    # dataset_id = 'my-dataset'  # replace with the parent dataset's ID
+    # dicom_store_id = 'my-dicom-store' # replace with the DICOM store ID
+    url = f"{base_url}/projects/{project_id}/locations/{location}"
 
     dicomweb_path = "{}/datasets/{}/dicomStores/{}/dicomWeb/studies".format(
         url, dataset_id, dicom_store_id
@@ -143,13 +226,11 @@ def dicomweb_search_studies(
     # searches for studies containing a patient's name.
     params = {"PatientName": "Sally Zhang"}
 
-    session = get_session()
-
     response = session.get(dicomweb_path, params=params)
 
     response.raise_for_status()
 
-    print("Studies found: response is {}".format(response))
+    print(f"Studies found: response is {response}")
 
     # Uncomment the following lines to process the response as JSON.
     # patients = response.json()
@@ -164,17 +245,47 @@ def dicomweb_search_studies(
 
 # [START healthcare_dicomweb_retrieve_instance]
 def dicomweb_retrieve_instance(
-    base_url,
     project_id,
-    cloud_region,
+    location,
     dataset_id,
     dicom_store_id,
     study_uid,
     series_uid,
     instance_uid,
 ):
-    """Handles the GET requests specified in the DICOMweb standard."""
-    url = "{}/projects/{}/locations/{}".format(base_url, project_id, cloud_region)
+    """Handles the GET requests specified in the DICOMweb standard.
+
+    See https://github.com/GoogleCloudPlatform/python-docs-samples/tree/main/healthcare/api-client/v1/dicom
+    before running the sample."""
+
+    # Imports the google.auth.transport.requests transport
+    from google.auth.transport import requests
+
+    # Imports a module to allow authentication using Application Default Credentials (ADC)
+    import google.auth
+
+    # Gets credentials from the environment. google.auth.default() returns credentials and the
+    # associated project ID, but in this sample, the project ID is passed in manually.
+    credentials, _ = google.auth.default()
+
+    scoped_credentials = credentials.with_scopes(
+        ["https://www.googleapis.com/auth/cloud-platform"]
+    )
+    # Creates a requests Session object with the credentials.
+    session = requests.AuthorizedSession(scoped_credentials)
+
+    # URL to the Cloud Healthcare API endpoint and version
+    base_url = "https://healthcare.googleapis.com/v1"
+
+    # TODO(developer): Uncomment these lines and replace with your values.
+    # project_id = 'my-project'  # replace with your GCP project ID
+    # location = 'us-central1'  # replace with the parent dataset's location
+    # dataset_id = 'my-dataset'  # replace with the parent dataset's ID
+    # dicom_store_id = 'my-dicom-store' # replace with the DICOM store ID
+    # study_uid = '1.3.6.1.4.1.5062.55.1.2270943358.716200484.1363785608958.61.0'  # replace with the study UID
+    # series_uid = '2.24.52329571877967561426579904912379710633'  # replace with the series UID
+    # instance_uid = '1.3.6.2.4.2.14619.5.2.1.6280.6001.129311971280445372188125744148'  # replace with the instance UID
+    url = f"{base_url}/projects/{project_id}/locations/{location}"
 
     dicom_store_path = "{}/datasets/{}/dicomStores/{}".format(
         url, dataset_id, dicom_store_id
@@ -186,9 +297,7 @@ def dicomweb_retrieve_instance(
 
     file_name = "instance.dcm"
 
-    # Make an authenticated API request
-    session = get_session()
-
+    # Set the required Accept header on the request
     headers = {"Accept": "application/dicom; transfer-syntax=*"}
     response = session.get(dicomweb_path, headers=headers)
     response.raise_for_status()
@@ -209,33 +318,59 @@ def dicomweb_retrieve_instance(
 
 # [START healthcare_dicomweb_retrieve_rendered]
 def dicomweb_retrieve_rendered(
-    base_url,
     project_id,
-    cloud_region,
+    location,
     dataset_id,
     dicom_store_id,
     study_uid,
     series_uid,
     instance_uid,
 ):
-    """Handles the GET requests specified in the DICOMweb standard."""
-    url = "{}/projects/{}/locations/{}".format(base_url, project_id, cloud_region)
+    """Handles the GET requests specified in the DICOMweb standard.
+
+    See https://github.com/GoogleCloudPlatform/python-docs-samples/tree/main/healthcare/api-client/v1/dicom
+    before running the sample."""
+
+    # Imports the google.auth.transport.requests transport
+    from google.auth.transport import requests
+
+    # Imports a module to allow authentication using Application Default Credentials (ADC)
+    import google.auth
+
+    # Gets credentials from the environment. google.auth.default() returns credentials and the
+    # associated project ID, but in this sample, the project ID is passed in manually.
+    credentials, _ = google.auth.default()
+
+    scoped_credentials = credentials.with_scopes(
+        ["https://www.googleapis.com/auth/cloud-platform"]
+    )
+    # Creates a requests Session object with the credentials.
+    session = requests.AuthorizedSession(scoped_credentials)
+
+    # URL to the Cloud Healthcare API endpoint and version
+    base_url = "https://healthcare.googleapis.com/v1"
+
+    # TODO(developer): Uncomment these lines and replace with your values.
+    # project_id = 'my-project'  # replace with your GCP project ID
+    # location = 'us-central1'  # replace with the parent dataset's location
+    # dataset_id = 'my-dataset'  # replace with the parent dataset's ID
+    # dicom_store_id = 'my-dicom-store' # replace with the DICOM store ID
+    # study_uid = '1.3.6.1.4.1.5062.55.1.2270943358.716200484.1363785608958.61.0'  # replace with the study UID
+    # series_uid = '2.24.52329571877967561426579904912379710633'  # replace with the series UID
+    # instance_uid = '1.3.6.2.4.2.14619.5.2.1.6280.6001.129311971280445372188125744148'  # replace with the instance UID
+    url = f"{base_url}/projects/{project_id}/locations/{location}"
 
     dicom_store_path = "{}/datasets/{}/dicomStores/{}".format(
         url, dataset_id, dicom_store_id
     )
 
-    instance_path = "{}/dicomWeb/studies/{}/series/{}/instances/{}".format(
+    dicomweb_path = "{}/dicomWeb/studies/{}/series/{}/instances/{}/rendered".format(
         dicom_store_path, study_uid, series_uid, instance_uid
     )
 
-    dicomweb_path = "{}/rendered".format(instance_path)
-
     file_name = "rendered_image.png"
 
-    # Make an authenticated API request
-    session = get_session()
-
+    # Sets the required Accept header on the request for a PNG image
     headers = {"Accept": "image/png"}
     response = session.get(dicomweb_path, headers=headers)
     response.raise_for_status()
@@ -255,21 +390,45 @@ def dicomweb_retrieve_rendered(
 
 
 # [START healthcare_dicomweb_delete_study]
-def dicomweb_delete_study(
-    base_url, project_id, cloud_region, dataset_id, dicom_store_id, study_uid
-):
+def dicomweb_delete_study(project_id, location, dataset_id, dicom_store_id, study_uid):
     """Handles DELETE requests equivalent to the GET requests specified in
     the WADO-RS standard.
-    """
-    url = "{}/projects/{}/locations/{}".format(base_url, project_id, cloud_region)
+
+    See https://github.com/GoogleCloudPlatform/python-docs-samples/tree/main/healthcare/api-client/v1/dicom
+    before running the sample."""
+
+    # Imports the google.auth.transport.requests transport
+    from google.auth.transport import requests
+
+    # Imports a module to allow authentication using Application Default Credentials (ADC)
+    import google.auth
+
+    # Gets credentials from the environment. google.auth.default() returns credentials and the
+    # associated project ID, but in this sample, the project ID is passed in manually.
+    credentials, _ = google.auth.default()
+
+    scoped_credentials = credentials.with_scopes(
+        ["https://www.googleapis.com/auth/cloud-platform"]
+    )
+    # Creates a requests Session object with the credentials.
+    session = requests.AuthorizedSession(scoped_credentials)
+
+    # URL to the Cloud Healthcare API endpoint and version
+    base_url = "https://healthcare.googleapis.com/v1"
+
+    # TODO(developer): Uncomment these lines and replace with your values.
+    # project_id = 'my-project'  # replace with your GCP project ID
+    # location = 'us-central1'  # replace with the parent dataset's location
+    # dataset_id = 'my-dataset'  # replace with the parent dataset's ID
+    # dicom_store_id = 'my-dicom-store' # replace with the DICOM store ID
+    # study_uid = '1.3.6.1.4.1.5062.55.1.2270943358.716200484.1363785608958.61.0'  # replace with the study UID
+    url = f"{base_url}/projects/{project_id}/locations/{location}"
 
     dicomweb_path = "{}/datasets/{}/dicomStores/{}/dicomWeb/studies/{}".format(
         url, dataset_id, dicom_store_id, study_uid
     )
 
-    # Make an authenticated API request
-    session = get_session()
-
+    # Sets the required application/dicom+json; charset=utf-8 header on the request
     headers = {"Content-Type": "application/dicom+json; charset=utf-8"}
 
     response = session.delete(dicomweb_path, headers=headers)
@@ -290,15 +449,13 @@ def parse_command_line_args():
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
 
-    parser.add_argument("--base_url", default=_BASE_URL, help="Healthcare API URL")
-
     parser.add_argument(
         "--project_id",
         default=(os.environ.get("GOOGLE_CLOUD_PROJECT")),
         help="GCP project name",
     )
 
-    parser.add_argument("--cloud_region", default="us-central1", help="GCP region")
+    parser.add_argument("--location", default="us-central1", help="GCP location")
 
     parser.add_argument("--dataset_id", default=None, help="Name of dataset")
 
@@ -350,9 +507,8 @@ def run_command(args):
 
     elif args.command == "dicomweb-store-instance":
         dicomweb_store_instance(
-            args.base_url,
             args.project_id,
-            args.cloud_region,
+            args.location,
             args.dataset_id,
             args.dicom_store_id,
             args.dcm_file,
@@ -360,18 +516,16 @@ def run_command(args):
 
     elif args.command == "dicomweb-search-instance":
         dicomweb_search_instance(
-            args.base_url,
             args.project_id,
-            args.cloud_region,
+            args.location,
             args.dataset_id,
             args.dicom_store_id,
         )
 
     elif args.command == "dicomweb-retrieve-study":
         dicomweb_retrieve_study(
-            args.base_url,
             args.project_id,
-            args.cloud_region,
+            args.location,
             args.dataset_id,
             args.dicom_store_id,
             args.study_uid,
@@ -379,9 +533,8 @@ def run_command(args):
 
     elif args.command == "dicomweb-retrieve-instance":
         dicomweb_retrieve_instance(
-            args.base_url,
             args.project_id,
-            args.cloud_region,
+            args.location,
             args.dataset_id,
             args.dicom_store_id,
             args.study_uid,
@@ -391,18 +544,16 @@ def run_command(args):
 
     elif args.command == "dicomweb-search-studies":
         dicomweb_search_studies(
-            args.base_url,
             args.project_id,
-            args.cloud_region,
+            args.location,
             args.dataset_id,
             args.dicom_store_id,
         )
 
     elif args.command == "dicomweb-retrieve-rendered":
         dicomweb_retrieve_rendered(
-            args.base_url,
             args.project_id,
-            args.cloud_region,
+            args.location,
             args.dataset_id,
             args.dicom_store_id,
             args.study_uid,
@@ -412,9 +563,8 @@ def run_command(args):
 
     elif args.command == "dicomweb-delete-study":
         dicomweb_delete_study(
-            args.base_url,
             args.project_id,
-            args.cloud_region,
+            args.location,
             args.dataset_id,
             args.dicom_store_id,
             args.study_uid,

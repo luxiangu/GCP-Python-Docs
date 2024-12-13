@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc. All Rights Reserved.
+# Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,5 +18,5 @@ import snippets
 
 
 def test_list_clusters_and_nodepools():
-    project_id = os.environ['GCLOUD_PROJECT']
-    snippets.list_clusters_and_nodepools(project_id, 'us-central1-f')
+    project_id = os.environ["GOOGLE_CLOUD_PROJECT"]
+    snippets.list_clusters_and_nodepools(project_id, "us-central1-f")
